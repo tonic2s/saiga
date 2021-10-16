@@ -1,2 +1,7 @@
-# saiga
-A mechanical keyboard
+# Saiga Keyboard
+
+![Saiga Logo](logo/saiga_logo.svg)
+
+A line of mechanical keyboards.
+- [Prototyping Board](prototyping-board/README.md)
+
