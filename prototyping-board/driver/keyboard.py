@@ -14,14 +14,6 @@ from adafruit_led_animation.animation.rainbowchase import RainbowChase
 from adafruit_led_animation.animation.rainbow import Rainbow
 from adafruit_led_animation.animation.colorcycle import ColorCycle
 
-from microcontroller import watchdog
-from watchdog import WatchDogMode
-
-# Setup watchdog (reset system if broken)
-# watchdog.timeout = 2.5 # Set a timeout of 2.5 seconds
-watchdog.mode = WatchDogMode.RESET
-watchdog.feed()
-
 # Setup Raspberry Pico board LED
 board_status_led = DigitalInOut(board.GP25)
 board_status_led.direction = Direction.OUTPUT
@@ -142,12 +134,6 @@ while True:
     if state_has_changed:
         print(state)
         state_has_changed = False
-
-
-    current_time = time.monotonic()
-    if current_time - watchdog_last_feed_time > 1:
-        watchdog_last_feed_time = current_time
-        watchdog.feed()
 
     step_rgb_animation()
     step_backgound_animation()
