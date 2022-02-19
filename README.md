@@ -4,5 +4,4 @@
 
 A line of mechanical keyboards.
 - [Prototyping Board](prototyping-board/README.md)
-- [Keypad / Numpad](Keypad/README.md)
-
+- [Keypad / Numpad](keypad/README.md)
