@@ -12,21 +12,25 @@ WATCHDOG = {
 
 KEYBOARD = {
     "ROW_PINS": [
+        board.GP28,
+        board.GP27,
+        board.GP26,
+        board.GP22,
+        board.GP21,
+    ],
+    "COLUMN_PINS": [
+        board.GP20,
+        board.GP19,
         board.GP18,
         board.GP17,
         board.GP16
     ],
-    "COLUMN_PINS": [
-        board.GP19,
-        board.GP20,
-        board.GP21,
-        board.GP22,
-        board.GP26
-    ],
     "KEYMAP": [
-        [(Keycode.SEVEN, ), (Keycode.EIGHT, ), (Keycode.NINE, ),  (Keycode.Q, ), (Keycode.W, )],
-        [(Keycode.FOUR, ),  (Keycode.FIVE, ),  (Keycode.SIX, ),   (Keycode.A, ), (Keycode.S, )],
-        [(Keycode.ONE, ),   (Keycode.TWO, ),   (Keycode.THREE, ), (Keycode.Y, ), (Keycode.X, )]
+        ["Num Lk", "/", "*", "-", "Upper Encoder"],
+        ["7", "8", "9", None, "Lower Encoder"],
+        ["4", "5", "6", "+", None],
+        ["1", "2", "3", None, None],
+        ["0", None, ",", "Enter", None],
     ],
     "SCHEDULE": {
         "refresh_time": 0.01,
@@ -35,13 +39,9 @@ KEYBOARD = {
 }
 
 BACKLIGHT = {
-    "LED_PINS": [
-        board.GP15,
-        board.GP14,
-        board.GP13,
-        board.GP12,
-        board.GP11
-    ],
+    "ENABLED": False,
+    "LED_PIN": board.GP4,
+    "BRIGHTNESS": 0.1,
     "SCHEDULE": {
         "refresh_time": 0.25,
         "priority": 1
@@ -49,8 +49,9 @@ BACKLIGHT = {
 }
 
 RGB_LIGHTS = {
-    "DATA_PIN": board.GP10,
-    "COUNT": 5,
+    "ENABLED": True,
+    "DATA_PIN": board.GP15,
+    "COUNT": 17,
     "BRIGHTNESS": 0.1,
     "SCHEDULE": {
         "refresh_time": 0.25,

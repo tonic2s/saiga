@@ -11,18 +11,20 @@ from scheduler import Scheduler
 scheduler = Scheduler(time.monotonic)
 
 
-if config.WATCHDOG.ENABLED:
+if config.WATCHDOG["ENABLED"]:
     # Reset system if broken
-    scheduler.register_task(Watchdog(config.WATCHDOG.TIMEOUT), **config.WATCHDOG.SCHEDULE)
+    scheduler.register_task(Watchdog(config.WATCHDOG["TIMEOUT"]), **config.WATCHDOG["SCHEDULE"])
 
 # Setup keyboard device
-scheduler.register_task(SaigaKeyboard(), **config.KEYBOARD.SCHEDULE)
+scheduler.register_task(SaigaKeyboard(), **config.KEYBOARD["SCHEDULE"])
 
-# RGB Neopixel
-scheduler.register_task(Neopixel(), **config.RGB_LIGHTS.SCHEDULE)
+if config.RGB_LIGHTS["ENABLED"]:
+    # RGB Neopixel
+    scheduler.register_task(Neopixel(), **config.RGB_LIGHTS["SCHEDULE"])
 
-# Single key LEDs
-scheduler.register_task(Backlight(), **config.BACKLIGHT.SCHEDULE)
+if config.BACKLIGHT["ENABLED"]:
+    # Single key LEDs
+    scheduler.register_task(Backlight(), **config.BACKLIGHT["SCHEDULE"])
 
 
 scheduler.start()

@@ -7,3 +7,6 @@ Copy `.UF2` file to the Raspbery Pico. It can be downloaded from https://circuit
 
 ## Install Librarys
 Install needed librarys from https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases
+
+## TODO
+- Frequency modulation to dimm LED backlight
