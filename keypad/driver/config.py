@@ -26,14 +26,25 @@ KEYBOARD = {
         board.GP16
     ],
     "KEYMAP": [
-        ["Num Lk", "/", "*", "-", "Upper Encoder"],
-        ["7", "8", "9", None, "Lower Encoder"],
-        ["4", "5", "6", "+", None],
-        ["1", "2", "3", None, None],
-        ["0", None, ",", "Enter", None],
+        [(Keycode.KEYPAD_NUMLOCK, ), (Keycode.KEYPAD_FORWARD_SLASH, ), (Keycode.KEYPAD_ASTERISK, ), (Keycode.KEYPAD_MINUS, ), (Keycode.A, )],
+        [(Keycode.KEYPAD_SEVEN, ), (Keycode.KEYPAD_EIGHT, ), (Keycode.KEYPAD_NINE, ), None, (Keycode.B, )],
+        [(Keycode.KEYPAD_FOUR, ), (Keycode.KEYPAD_FIVE, ), (Keycode.KEYPAD_SIX, ), (Keycode.KEYPAD_PLUS, ), None],
+        [(Keycode.KEYPAD_ONE, ), (Keycode.KEYPAD_TWO, ), (Keycode.KEYPAD_THREE, ), None, None],
+        [(Keycode.KEYPAD_ZERO, ), None, (Keycode.KEYPAD_PERIOD, ), (Keycode.KEYPAD_ENTER, ), None],
     ],
     "SCHEDULE": {
         "refresh_time": 0.01,
+        "priority": 50
+    }
+}
+
+ENCODERS = {
+    "AB_PINS": [
+        (board.GP0, board.GP1),
+        (board.GP2, board.GP3)
+    ],
+    "SCHEDULE": {
+        "refresh_time": 0.25,
         "priority": 50
     }
 }
@@ -54,7 +65,7 @@ RGB_LIGHTS = {
     "COUNT": 17,
     "BRIGHTNESS": 0.1,
     "SCHEDULE": {
-        "refresh_time": 0.25,
+        "refresh_time": 0.1,
         "priority": 1
     }
 }

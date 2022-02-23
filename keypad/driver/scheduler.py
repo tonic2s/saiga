@@ -1,4 +1,5 @@
 import time
+import task
 
 class Scheduler:
     def __init__(self, time_func):
@@ -10,16 +11,20 @@ class Scheduler:
             "task": task,
             "refresh_time": refresh_time,
             "priority": priority,
-            "last_run_time": None
+            "last_run_time": time.monotonic() - refresh_time
         })
         self.tasks.sort(key=lambda t: t["priority"])
 
     def start(self):
-        for i, task in enumerate(self.tasks):
-            current_time = time.monotonic()
-            time_delta = current_time - task["last_run_time"]
+        should_stop = False
 
-            if time_delta > task["refresh_time"]:
-                self.tasks[i]["last_run_time"] = current_time
+        while not should_stop:
+            for i, task in enumerate(self.tasks):
+                current_time = time.monotonic()
+                time_delta = current_time - task["last_run_time"]
 
-                task["task"](time_delta)
+                if time_delta > task["refresh_time"]:
+                    self.tasks[i]["last_run_time"] = current_time
+
+                    if task["task"].advance(time_delta):
+                        should_stop = True

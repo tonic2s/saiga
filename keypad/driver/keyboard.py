@@ -11,12 +11,12 @@ class SaigaKeyboard(Task):
         # Setup keyboard device
         self.kbd = Keyboard(usb_hid.devices)
 
-        self.keymap = config.KEYBOARD.KEYMAP
+        self.keymap = config.KEYBOARD["KEYMAP"]
 
         # Setup Rows
         self.rows = []
 
-        for row_pin in config.KEYBOARD.ROW_PINS:
+        for row_pin in config.KEYBOARD["ROW_PINS"]:
             row = DigitalInOut(row_pin)
             row.direction = Direction.OUTPUT
 
@@ -24,7 +24,7 @@ class SaigaKeyboard(Task):
 
         # Setup Columns
         self.columns = []
-        for column_pin in config.KEYBOARD.COLUMN_PINS:
+        for column_pin in config.KEYBOARD["COLUMN_PINS"]:
             column = DigitalInOut(column_pin)
             column.direction = Direction.INPUT
             column.pull = Pull.DOWN
@@ -41,22 +41,22 @@ class SaigaKeyboard(Task):
         return bool(self.state[row][column])
 
     def advance(self, time_delta):
-        for row_number, row in enumerate(rows):
+        for row_number, row in enumerate(self.rows):
             row.value = True
 
-            for column_number, col in enumerate(columns):
+            for column_number, col in enumerate(self.columns):
                 is_pressed = col.value
 
-                if state[row_number][column_number] != is_pressed:
-                    state[row_number][column_number] = int(is_pressed)
+                if self.state[row_number][column_number] != is_pressed:
+                    self.state[row_number][column_number] = int(is_pressed)
 
                     try:
                         if is_pressed:
-                            kbd.press(*keymap[row_number][column_number])
+                            self.kbd.press(*self.keymap[row_number][column_number])
                         else:
-                            kbd.release(*keymap[row_number][column_number])
+                            self.kbd.release(*self.keymap[row_number][column_number])
                     except ValueError as e:
-                        kbd.release_all()
+                        self.kbd.release_all()
                         print(e)
 
                     self.state_has_changed = True
@@ -64,5 +64,5 @@ class SaigaKeyboard(Task):
             row.value = False
 
         if self.state_has_changed:
-            print(state)
+            print(self.state)
             self.state_has_changed = False
