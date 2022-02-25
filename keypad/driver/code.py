@@ -1,35 +1,51 @@
 import time
 import config
 
-# from my_watchdog import Watchdog
-from encoder import RotaryEncoder
-from keyboard import SaigaKeyboard
-from lighting.accent import Neopixel
-# from lighting.backlight import Backlight
+from consumers.accent import Neopixel
+# from consumers.backlight import Backlight
+from consumers.statuslight import StatusLight
+from consumers.watchdog_timer import Watchdog
+from consumers.keyboard import USBKeyboardDevice
+from consumers.animation import NeopixelAnimation
+from consumers.logger import FileLogger, ConsoleLogger
+
+from providers.encoder import RotaryEncoderProvider
+from providers.keyboard import AsyncKeyboardProvider
+
 from scheduler import Scheduler
+from messaging import MessageBus
 
 
 scheduler = Scheduler(time.monotonic)
 
+message_bus = scheduler.register_task(MessageBus())
 
-# if config.WATCHDOG["ENABLED"]:
-#     # Reset system if broken
-#     scheduler.register_task(Watchdog(), **config.WATCHDOG["SCHEDULE"])
+# Reset system if broken
+if config.WATCHDOG["ENABLED"]:
+    print("watchdog is enbled")
+    scheduler.register_task(Watchdog())
 
 # Setup keyboard device
-scheduler.register_task(SaigaKeyboard(), **config.KEYBOARD["SCHEDULE"])
+scheduler.register_task(AsyncKeyboardProvider(message_bus))
+scheduler.register_task(USBKeyboardDevice(message_bus))
 
 # Setup rotary encoders
-encoder_task = RotaryEncoder()
-scheduler.register_task(encoder_task, **config.ENCODERS["SCHEDULE"])
+scheduler.register_task(RotaryEncoderProvider(message_bus))
 
-if config.RGB_LIGHTS["ENABLED"]:
-    # RGB Neopixel
-    scheduler.register_task(Neopixel(encoder_task), **config.RGB_LIGHTS["SCHEDULE"])
+# RGB Neopixel
+scheduler.register_task(Neopixel(message_bus))
+# scheduler.register_task(NeopixelAnimation(message_bus))
 
+scheduler.register_task(StatusLight(message_bus))
+
+scheduler.register_task(FileLogger(message_bus))
+scheduler.register_task(ConsoleLogger(message_bus))
+
+# Single key LEDs
 # if config.BACKLIGHT["ENABLED"]:
-#     # Single key LEDs
 #     scheduler.register_task(Backlight(), **config.BACKLIGHT["SCHEDULE"])
 
-
-scheduler.start()
+try:
+    scheduler.start()
+except Exception as e:
+    print("critical error", str(e))

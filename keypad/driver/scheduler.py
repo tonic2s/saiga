@@ -6,25 +6,22 @@ class Scheduler:
         self.tasks = []
         self.time_func = time_func
 
-    def register_task(self, task: task.Task, refresh_time: int, priority: int):
+    def register_task(self, task: task.Task):
         self.tasks.append({
             "task": task,
-            "refresh_time": refresh_time,
-            "priority": priority,
-            "last_run_time": time.monotonic() - refresh_time
+            "last_run_time": time.monotonic() - task.SCHEDULE["update_time"]
         })
-        self.tasks.sort(key=lambda t: t["priority"])
+        self.tasks.sort(key=lambda t: t["task"].SCHEDULE["priority"])
+
+        return task
 
     def start(self):
-        should_stop = False
-
-        while not should_stop:
+        while True:
             for i, task in enumerate(self.tasks):
                 current_time = time.monotonic()
                 time_delta = current_time - task["last_run_time"]
 
-                if time_delta > task["refresh_time"]:
+                if time_delta > task["task"].SCHEDULE["update_time"]:
                     self.tasks[i]["last_run_time"] = current_time
 
-                    if task["task"].advance(time_delta):
-                        should_stop = True
+                    task["task"].advance(time_delta)
