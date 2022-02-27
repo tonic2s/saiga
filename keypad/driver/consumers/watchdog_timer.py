@@ -1,6 +1,6 @@
 import config
-from task import Task
 
+from task import Task
 from watchdog import WatchDogMode
 from microcontroller import watchdog as RP2040Watchdog
 
@@ -16,5 +16,5 @@ class Watchdog(Task):
         RP2040Watchdog.mode = WatchDogMode.RESET
         RP2040Watchdog.feed()
 
-    def advance(self, time_delta):
+    async def advance(self):
         RP2040Watchdog.feed()

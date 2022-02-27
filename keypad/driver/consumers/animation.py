@@ -4,12 +4,12 @@ import neopixel
 from task import Task
 from messaging import MessageBus
 
-from adafruit_led_animation.animation.pulse import Pulse
+# from adafruit_led_animation.animation.pulse import Pulse
 from adafruit_led_animation.animation.rainbow import Rainbow
-from adafruit_led_animation.animation.colorcycle import ColorCycle
-from adafruit_led_animation.animation.rainbowcomet import RainbowComet
-from adafruit_led_animation.animation.rainbowchase import RainbowChase
-from adafruit_led_animation.animation.rainbowsparkle import RainbowSparkle
+# from adafruit_led_animation.animation.colorcycle import ColorCycle
+# from adafruit_led_animation.animation.rainbowcomet import RainbowComet
+# from adafruit_led_animation.animation.rainbowchase import RainbowChase
+# from adafruit_led_animation.animation.rainbowsparkle import RainbowSparkle
 
 
 class NeopixelAnimation(Task):
@@ -26,6 +26,6 @@ class NeopixelAnimation(Task):
         # self.pixel_animation = ColorCycle(self.pixels, 1.0, ((255, 0, 0), (255, 40, 0), (255, 150, 0), (0, 255, 0), (0, 0, 255), (180, 0, 255)))
         self.pixel_animation = Rainbow(self.pixels, 0.05)
 
-    def advance(self, time_delta):
+    async def advance(self):
         self.pixel_animation.draw()
         self.pixel_animation.show()

@@ -10,5 +10,4 @@ Install needed librarys from https://github.com/adafruit/Adafruit_CircuitPython_
 
 ## TODO
 - Frequency modulation to dimm LED backlight
-- Message to command mediator to configure complex keyboard configuration
 - Disable watchdog when stoping script

@@ -6,7 +6,7 @@ from messaging import MessageBus, MessageType
 
 
 class RotaryEncoderProvider(Task):
-    SCHEDULE = { "update_time": 0.01, "priority": 50 }
+    UPDATE_TIME = 0.01
 
     def __init__(self, message_bus: MessageBus):
         # Setup message bus
@@ -23,7 +23,7 @@ class RotaryEncoderProvider(Task):
         # Setup State
         self.state = [0 for i in range(len(self.encoders))]
 
-    def advance(self, time_delta):
+    async def advance(self):
         for i, encoder in enumerate(self.encoders):
             new_position = encoder.position
 

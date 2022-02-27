@@ -2,11 +2,11 @@ import config
 import neopixel
 
 from task import Task
-from messaging import MessageBus, MessageType
+from messaging import MessageBus, MessageType, CommandType
 
 
 class Neopixel(Task):
-    SCHEDULE = { "update_time": 0.1, "priority": 1 }
+    UPDATE_TIME = 0.1
 
     def __init__(self, message_bus: MessageBus):
         # Setup message handing
@@ -36,24 +36,25 @@ class Neopixel(Task):
 
         return int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
 
-    def advance(self, time_delta):
+    async def advance(self):
         for message in self.message_reader:
-            if message.type == MessageType.ENCODER_CHANGED:
-                if message.metadata["id"] == 0:
-                    hue = ((config.RGB_LIGHTS["DEFAULT_HUE"] + message.metadata["position"]) % 64) / 64
-                    saturation = 1
-                    value = 1
+            if message.type == MessageType.COMMAND and message.command == CommandType.HUE_SET:
+                color = self.hsv_to_rgb(message.metadata["hue"], 1, 1)
 
-                    rgb = self.hsv_to_rgb(hue, saturation, value)
+                self.pixels.fill(color)
+                self.pixels.show()
 
-                    self.pixels.fill(rgb)
-                    self.pixels.show()
+            elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_SET:
+                self.brightness = min(1.0, max(0.0, message.metadata["value"]))
+                self.pixels.brightness = self.brightness
+                self.pixels.show()
 
-                elif message.metadata["id"] == 1:
-                    if message.metadata["delta"] > 0:
-                        self.brightness = min(1.0, self.brightness + 0.1)
-                    else:
-                        self.brightness = max(0.0, self.brightness - 0.1)
+            elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_UP:
+                self.brightness = min(1.0, self.brightness + 0.1)
+                self.pixels.brightness = self.brightness
+                self.pixels.show()
 
-                    self.pixels.brightness = self.brightness
-                    self.pixels.show()
+            elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_DOWN:
+                self.brightness = max(0.0, self.brightness - 0.1)
+                self.pixels.brightness = self.brightness
+                self.pixels.show()

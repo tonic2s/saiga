@@ -1,5 +1,5 @@
 import config
-import pulseio
+# import pulseio
 
 from task import Task
 from digitalio import DigitalInOut, Direction
@@ -15,5 +15,5 @@ class Backlight(Task):
         self.led = DigitalInOut(config.BACKLIGHT["LED_PIN"])
         self.led.direction = Direction.OUTPUT
 
-    def advance(self, time_delta):
+    async def advance(self):
         self.led.value = True

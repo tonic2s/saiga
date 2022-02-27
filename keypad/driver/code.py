@@ -1,5 +1,12 @@
 import time
 import config
+import asyncio
+
+from messaging import MessageBus
+from mediator import MessageCommandMediator
+
+from providers.encoder import RotaryEncoderProvider
+from providers.keyboard import AsyncKeyboardProvider
 
 from consumers.accent import Neopixel
 # from consumers.backlight import Backlight
@@ -9,43 +16,39 @@ from consumers.keyboard import USBKeyboardDevice
 from consumers.animation import NeopixelAnimation
 from consumers.logger import FileLogger, ConsoleLogger
 
-from providers.encoder import RotaryEncoderProvider
-from providers.keyboard import AsyncKeyboardProvider
 
-from scheduler import Scheduler
-from messaging import MessageBus
+message_bus = MessageBus()
+
+tasks = [
+    message_bus,
+
+    # FileLogger(message_bus),
+    ConsoleLogger(message_bus),
+
+    AsyncKeyboardProvider(message_bus),
+    USBKeyboardDevice(message_bus),
+
+    RotaryEncoderProvider(message_bus),
 
 
-scheduler = Scheduler(time.monotonic)
+    StatusLight(message_bus),
 
-message_bus = scheduler.register_task(MessageBus())
+    # Backlight(),
+
+    Neopixel(message_bus)
+    # NeopixelAnimation(message_bus)
+]
 
 # Reset system if broken
 if config.WATCHDOG["ENABLED"]:
     print("watchdog is enbled")
-    scheduler.register_task(Watchdog())
+    tasks.append(Watchdog())
 
-# Setup keyboard device
-scheduler.register_task(AsyncKeyboardProvider(message_bus))
-scheduler.register_task(USBKeyboardDevice(message_bus))
+# Set asyncio exception handler
+def loop_exception_handler(loop, context):
+    print("uncought exception", loop, context)
+asyncio.get_event_loop().set_exception_handler(loop_exception_handler)
 
-# Setup rotary encoders
-scheduler.register_task(RotaryEncoderProvider(message_bus))
-
-# RGB Neopixel
-scheduler.register_task(Neopixel(message_bus))
-# scheduler.register_task(NeopixelAnimation(message_bus))
-
-scheduler.register_task(StatusLight(message_bus))
-
-scheduler.register_task(FileLogger(message_bus))
-scheduler.register_task(ConsoleLogger(message_bus))
-
-# Single key LEDs
-# if config.BACKLIGHT["ENABLED"]:
-#     scheduler.register_task(Backlight(), **config.BACKLIGHT["SCHEDULE"])
-
-try:
-    scheduler.start()
-except Exception as e:
-    print("critical error", str(e))
+# Create tasks and start core event loop
+asyncio_tasks = [asyncio.create_task(task._advance()) for task in tasks]
+asyncio.run(asyncio.gather(*asyncio_tasks, return_exceptions=False))
