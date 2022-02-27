@@ -8,12 +8,11 @@ from mediator import MessageCommandMediator
 from providers.encoder import RotaryEncoderProvider
 from providers.keyboard import AsyncKeyboardProvider
 
-from consumers.accent import Neopixel
 # from consumers.backlight import Backlight
+from consumers.accent import AccentLight
 from consumers.statuslight import StatusLight
 from consumers.watchdog_timer import Watchdog
 from consumers.keyboard import USBKeyboardDevice
-from consumers.animation import NeopixelAnimation
 from consumers.logger import FileLogger, ConsoleLogger
 
 
@@ -30,13 +29,11 @@ tasks = [
 
     RotaryEncoderProvider(message_bus),
 
-
     StatusLight(message_bus),
 
     # Backlight(),
 
-    Neopixel(message_bus)
-    # NeopixelAnimation(message_bus)
+    AccentLight(message_bus)
 ]
 
 # Reset system if broken

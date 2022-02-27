@@ -30,6 +30,8 @@ class CommandType:
     BRIGHTNESS_DOWN = 4
     HUE_SET = 5
     STATUS_BLINK = 6
+    LIGHTING_PROGRAM_NEXT = 7,
+    LIGHTING_PROGRAM_LAST = 8
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -44,6 +46,10 @@ class CommandType:
             return "HUE_SET"
         elif command_type == CommandType.STATUS_BLINK:
             return "STATUS_BLINK"
+        elif command_type == CommandType.LIGHTING_PROGRAM_NEXT:
+            return "LIGHTING_PROGRAM_NEXT"
+        elif command_type == CommandType.LIGHTING_PROGRAM_LAST:
+            return "LIGHTING_PROGRAM_LAST"
 
 
 class Message:
@@ -76,6 +82,9 @@ class MessageReader:
             return message
         else:
             raise StopIteration
+
+    def unsubscribe(self):
+        self.message_bus.readers.remove(self)
 
 class MessageBus(Task):
     UPDATE_TIME = 1
@@ -128,12 +137,26 @@ class MessageCommandMediator:
             return
 
         elif message.type == MessageType.KEY_PRESSED:
-            keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
-            self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=True, release=False, keycode=keycode)
+            if message.metadata["row"] == 0 and message.metadata["column"] == 4:
+                # upper rotary encoder
+                self.message_bus.push(MessageType.COMMAND, command=CommandType.LIGHTING_PROGRAM_LAST)
+            elif message.metadata["row"] == 1 and message.metadata["column"] == 4:
+                # lower rotary encoder
+                self.message_bus.push(MessageType.COMMAND, command=CommandType.LIGHTING_PROGRAM_NEXT)
+            else:
+                keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
+                self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=True, release=False, keycode=keycode)
 
         elif message.type == MessageType.KEY_RELEASED:
-            keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
-            self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=False, release=True, keycode=keycode)
+            if message.metadata["row"] == 0 and message.metadata["column"] == 4:
+                # upper rotary encoder
+                return
+            elif message.metadata["row"] == 1 and message.metadata["column"] == 4:
+                # lower rotary encoder
+                return
+            else:
+                keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
+                self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=False, release=True, keycode=keycode)
 
         elif message.type == MessageType.ENCODER_CHANGED:
             if message.metadata["id"] == 0:

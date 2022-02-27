@@ -1,48 +1,53 @@
 import config
-import neopixel
 
 from task import Task
-from messaging import MessageBus, MessageType, CommandType
+from neopixel import NeoPixel
+from messaging import CommandType, MessageBus, MessageType
+
+from lighting.hue import ConfigurableHue
+from lighting.rainbow import RainbowAnimation
 
 
-class Neopixel(Task):
+class AccentLight(Task):
     UPDATE_TIME = 0.1
 
     def __init__(self, message_bus: MessageBus):
         # Setup message handing
-        self.message_reader = message_bus.subscribe()
+        self.message_bus = message_bus
+        self.message_reader = self.message_bus.subscribe()
 
         # Setup RGB LED's
+        self.pixels = NeoPixel(config.RGB_LIGHTS["DATA_PIN"], config.RGB_LIGHTS["COUNT"], brightness=config.RGB_LIGHTS["BRIGHTNESS"], auto_write=False)
+
+        # Setup brightness
         self.brightness = config.RGB_LIGHTS["BRIGHTNESS"]
 
-        self.pixels = neopixel.NeoPixel(config.RGB_LIGHTS["DATA_PIN"], config.RGB_LIGHTS["COUNT"], brightness=self.brightness, auto_write=False)
+        # Setup program list
+        self.programs = [
+            ConfigurableHue,
+            RainbowAnimation
+        ]
 
-        self.pixels.fill(self.hsv_to_rgb(config.RGB_LIGHTS["DEFAULT_HUE"], 1, 1))
-        self.pixels.show()
+        self.current_program_index = 0
+        self.current_program = None
 
-    def hsv_to_rgb(self, hue, saturation, value):
-        # Source: https://stackoverflow.com/a/26856771/3593881
+        self.load_program(self.current_program_index)
 
-        rgb = None
-        if saturation == 0.0: rgb = (value, value, value)
-        i = int(hue*6.) # assume int() truncates!
-        f = (hue*6.)-i; p,q,t = value*(1.-saturation), value*(1.-saturation*f), value*(1.-saturation*(1.-f)); i%=6
-        if i == 0: rgb = (value, t, p)
-        if i == 1: rgb = (q, value, p)
-        if i == 2: rgb = (p, value, t)
-        if i == 3: rgb = (p, q, value)
-        if i == 4: rgb = (t, p, value)
-        if i == 5: rgb = (value, p, q)
+    def load_program(self, index):
+        if self.current_program:
+            self.current_program.deinit()
 
-        return int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
+        self.current_program = self.programs[index](self.pixels, self.message_bus)
 
     async def advance(self):
         for message in self.message_reader:
-            if message.type == MessageType.COMMAND and message.command == CommandType.HUE_SET:
-                color = self.hsv_to_rgb(message.metadata["hue"], 1, 1)
+            if message.type == MessageType.COMMAND and message.command == CommandType.LIGHTING_PROGRAM_NEXT:
+                self.current_program_index = (self.current_program_index + 1) % len(self.programs)
+                self.load_program(self.current_program_index)
 
-                self.pixels.fill(color)
-                self.pixels.show()
+            elif message.type == MessageType.COMMAND and message.command == CommandType.LIGHTING_PROGRAM_LAST:
+                self.current_program_index = (self.current_program_index - 1) % len(self.programs)
+                self.load_program(self.current_program_index)
 
             elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_SET:
                 self.brightness = min(1.0, max(0.0, message.metadata["value"]))
@@ -58,3 +63,6 @@ class Neopixel(Task):
                 self.brightness = max(0.0, self.brightness - 0.1)
                 self.pixels.brightness = self.brightness
                 self.pixels.show()
+
+        if self.current_program:
+            self.current_program.advance()
