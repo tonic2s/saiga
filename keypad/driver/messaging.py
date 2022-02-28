@@ -30,8 +30,9 @@ class CommandType:
     BRIGHTNESS_DOWN = 4
     HUE_SET = 5
     STATUS_BLINK = 6
-    LIGHTING_PROGRAM_NEXT = 7,
+    LIGHTING_PROGRAM_NEXT = 7
     LIGHTING_PROGRAM_LAST = 8
+    FLAG_SET = 9
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -50,6 +51,8 @@ class CommandType:
             return "LIGHTING_PROGRAM_NEXT"
         elif command_type == CommandType.LIGHTING_PROGRAM_LAST:
             return "LIGHTING_PROGRAM_LAST"
+        elif command_type == CommandType.FLAG_SET:
+            return "FLAG_SET"
 
 
 class Message:
@@ -162,12 +165,14 @@ class MessageCommandMediator:
             if message.metadata["id"] == 0:
                 hue = ((config.RGB_LIGHTS["DEFAULT_HUE"] + message.metadata["position"]) % 64) / 64
                 self.message_bus.push(MessageType.COMMAND, command=CommandType.HUE_SET, hue=hue)
+                self.message_bus.push(MessageType.COMMAND, command=CommandType.FLAG_SET)
 
             elif message.metadata["id"] == 1:
                 if message.metadata["delta"] > 0:
-                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_UP)
+                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_UP, value=0.05)
                 else:
-                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_DOWN)
+                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_DOWN, value=0.05)
+
 
         elif message.type == MessageType.ERROR:
             self.message_bus.push(MessageType.COMMAND, command=CommandType.STATUS_BLINK, count=3)

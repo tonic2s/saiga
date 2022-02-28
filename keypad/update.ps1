@@ -1,0 +1,1 @@
+Copy-Item -Path './driver' -Destination 'E:' -Recurse

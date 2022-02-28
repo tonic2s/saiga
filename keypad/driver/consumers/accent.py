@@ -1,17 +1,22 @@
 import config
 
-from task import Task
+from task import TimedTask
 from neopixel import NeoPixel
 from messaging import CommandType, MessageBus, MessageType
 
 from lighting.hue import ConfigurableHue
 from lighting.rainbow import RainbowAnimation
+from lighting.flag import SelectableFlag
+
+from animation.pulse import Pulse
 
 
-class AccentLight(Task):
-    UPDATE_TIME = 0.1
+class AccentLight(TimedTask):
+    UPDATE_TIME = 0.01
 
     def __init__(self, message_bus: MessageBus):
+        super().__init__()
+        
         # Setup message handing
         self.message_bus = message_bus
         self.message_reader = self.message_bus.subscribe()
@@ -25,7 +30,13 @@ class AccentLight(Task):
         # Setup program list
         self.programs = [
             ConfigurableHue,
-            RainbowAnimation
+            RainbowAnimation,
+            SelectableFlag
+        ]
+
+        # Setup animation list
+        self.animations = [
+            Pulse
         ]
 
         self.current_program_index = 0
@@ -33,13 +44,24 @@ class AccentLight(Task):
 
         self.load_program(self.current_program_index)
 
+        self.current_animation_index = 0
+        self.current_animation = None
+        
+        self.load_animation(self.current_animation_index)
+
     def load_program(self, index):
         if self.current_program:
             self.current_program.deinit()
 
         self.current_program = self.programs[index](self.pixels, self.message_bus)
 
-    async def advance(self):
+    def load_animation(self, index):
+        if self.current_animation:
+            self.current_animation.deinit()
+
+        self.current_animation = self.animations[index](self.pixels, self.message_bus)
+
+    async def advance(self, time_delta):
         for message in self.message_reader:
             if message.type == MessageType.COMMAND and message.command == CommandType.LIGHTING_PROGRAM_NEXT:
                 self.current_program_index = (self.current_program_index + 1) % len(self.programs)
@@ -55,14 +77,17 @@ class AccentLight(Task):
                 self.pixels.show()
 
             elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_UP:
-                self.brightness = min(1.0, self.brightness + 0.1)
+                self.brightness = min(1.0, self.brightness + message.metadata["value"])
                 self.pixels.brightness = self.brightness
                 self.pixels.show()
 
             elif message.type == MessageType.COMMAND and message.command == CommandType.BRIGHTNESS_DOWN:
-                self.brightness = max(0.0, self.brightness - 0.1)
+                self.brightness = max(0.0, self.brightness - message.metadata["value"])
                 self.pixels.brightness = self.brightness
                 self.pixels.show()
 
         if self.current_program:
             self.current_program.advance()
+
+        if self.current_animation:
+            self.current_animation.advance(time_delta)

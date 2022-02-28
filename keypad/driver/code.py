@@ -17,7 +17,7 @@ from consumers.logger import FileLogger, ConsoleLogger
 message_bus = MessageBus()
 
 tasks = [
-    message_bus,
+    message_bus, 
 
     # FileLogger(message_bus),
     ConsoleLogger(message_bus),
@@ -41,7 +41,7 @@ if config.WATCHDOG["ENABLED"]:
 
 # Set asyncio exception handler
 def loop_exception_handler(loop, context):
-    print("uncought exception", loop, context)
+    print("uncaught exception", loop, context)
 asyncio.get_event_loop().set_exception_handler(loop_exception_handler)
 
 # Create tasks and start core event loop

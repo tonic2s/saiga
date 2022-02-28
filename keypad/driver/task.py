@@ -34,7 +34,7 @@ class TimedTask:
 
         while True:
             current_time = time.monotonic()
-            time_delta = self.last_excution - current_time
+            time_delta = current_time - self.last_excution # hab die vertauscht die waren falschrum
             self.last_excution = current_time
 
             await self.advance(time_delta)
