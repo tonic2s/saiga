@@ -6,7 +6,7 @@ from microcontroller import watchdog as RP2040Watchdog
 
 
 class Watchdog(Task):
-    SCHEDULE = { "update_time": 1, "priority": 100 }
+    UPDATE_TIME = 1
 
     def __init__(self):
         # Setup watchdog with given timeout

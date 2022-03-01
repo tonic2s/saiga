@@ -1,49 +1,56 @@
 import config
 import asyncio
+import traceback
 
-from messaging import MessageBus
+from messaging import CommandBus
 
-from providers.encoder import RotaryEncoderProvider
-from providers.keyboard import AsyncKeyboardProvider
+from inputs.encoder import RotaryEncoderInput
+from inputs.keyboard import KeyboardInput
 
-# from consumers.backlight import Backlight
-from consumers.accent import AccentLight
-from consumers.statuslight import StatusLight
-from consumers.watchdog_timer import Watchdog
-from consumers.keyboard import USBKeyboardDevice
-from consumers.logger import FileLogger, ConsoleLogger
+from tasks.accent import AccentLight
+# from tasks.backlight import Backlight
+from tasks.statuslight import StatusLight
+from tasks.watchdog_timer import Watchdog
+from tasks.keyboard import USBKeyboardDevice
+from tasks.logger import FileLogger, ConsoleLogger
 
 
-message_bus = MessageBus()
+# Setup tasks for execution
+try:
+    command_bus = CommandBus()
 
-tasks = [
-    message_bus, 
+    tasks = [
+        command_bus,
 
-    # FileLogger(message_bus),
-    ConsoleLogger(message_bus),
+        # FileLogger(command_bus),
+        ConsoleLogger(command_bus),
 
-    AsyncKeyboardProvider(message_bus),
-    USBKeyboardDevice(message_bus),
+        KeyboardInput(command_bus),
+        USBKeyboardDevice(command_bus),
 
-    RotaryEncoderProvider(message_bus),
+        RotaryEncoderInput(command_bus),
 
-    StatusLight(message_bus),
+        StatusLight(command_bus),
 
-    # Backlight(),
+        # Backlight(),
 
-    AccentLight(message_bus)
-]
+        AccentLight(command_bus),
+    ]
 
-# Reset system if broken
-if config.WATCHDOG["ENABLED"]:
-    print("watchdog is enbled")
-    tasks.append(Watchdog())
+    # Reset system if broken
+    if config.WATCHDOG["ENABLED"]:
+        print("watchdog is enbled")
+        tasks.append(Watchdog())
 
-# Set asyncio exception handler
-def loop_exception_handler(loop, context):
-    print("uncaught exception", loop, context)
-asyncio.get_event_loop().set_exception_handler(loop_exception_handler)
+    # Set asyncio exception handler
+    def loop_exception_handler(loop, context):
+        print("Uncaught exception", loop, context)
+    asyncio.get_event_loop().set_exception_handler(loop_exception_handler)
 
-# Create tasks and start core event loop
-asyncio_tasks = [asyncio.create_task(task._advance()) for task in tasks]
-asyncio.run(asyncio.gather(*asyncio_tasks, return_exceptions=False))
+    # Create tasks and start core event loop
+    asyncio_tasks = [task._advance() for task in tasks]
+    asyncio.run(asyncio.gather(*asyncio_tasks, return_exceptions=False))
+
+except Exception as e:
+    print("TASK INIT EXCEPTION:", e)
+    print("TASK EXCEPTION", traceback.format_exception(BaseException, e, e.__traceback__))

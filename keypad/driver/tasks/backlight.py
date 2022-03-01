@@ -6,7 +6,7 @@ from digitalio import DigitalInOut, Direction
 
 
 class Backlight(Task):
-    SCHEDULE = { "update_time": 1, "priority": 1 }
+    UPDATE_TIME = 1
 
     def __init__(self):
         # https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/#pulseio.PWMOut

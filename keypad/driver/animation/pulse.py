@@ -1,36 +1,34 @@
 import config
 
-
-from messaging import MessageBus, MessageType, CommandType
+from neopixel import NeoPixel
+from messaging import CommandBus, CommandType
 from animation.program import AnimationProgram
 
 
 class Pulse(AnimationProgram):
-
-    def __init__(self, pixels: NeoPixel, message_bus: MessageBus):
+    def __init__(self, pixels: NeoPixel, command_bus: CommandBus):
         super().__init__()
 
         self.cycletime = config.ANIMATION["CYCLE_TIME"]
         self.depth = config.ANIMATION["DEPTH"]
 
         self.currentstep = 0
-        self.message_bus = message_bus
+        self.command_bus = command_bus
 
-    
-        self.timesincelastcall = 0
-        self.animationprogress = 0
+
+        self.time_since_last_call = 0
+        self.animation_progress = 0
 
     def advance(self, time_delta):
-        self.timesincelastcall += time_delta
+        self.time_since_last_call += time_delta
 
-        oldprogress = self.animationprogress
-        self.animationprogress = ((self.timesincelastcall / self.cycletime) + oldprogress) % 1
+        self.animation_progress = ((self.time_since_last_call / self.cycletime) + self.animation_progress) % 1
 
-        delta = (self.timesincelastcall / self.cycletime) / (1 / self.depth)
-        if self.animationprogress < 0.5:
-            self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_UP, value=delta)
-            
+        delta = (self.time_since_last_call / self.cycletime) / (1 / self.depth)
+        if self.animation_progress < 0.5:
+            self.command_bus.push(CommandType.BRIGHTNESS_UP, delta=delta)
+
         else:
-            self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_DOWN, value=delta)
+            self.command_bus.push(CommandType.BRIGHTNESS_DOWN, delta=delta)
 
-        self.timesincelastcall = 0
+        self.time_since_last_call = 0

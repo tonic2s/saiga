@@ -2,15 +2,15 @@ import config
 
 from neopixel import NeoPixel
 from lighting.program import LightingProgram
-from messaging import MessageBus, MessageType, CommandType
+from messaging import CommandBus, InputType, CommandType
 
 
 class ConfigurableHue(LightingProgram):
-    def __init__(self, pixels: NeoPixel, message_bus: MessageBus):
+    def __init__(self, pixels: NeoPixel, command_bus: CommandBus):
         self.pixels = pixels
 
-        # Setup message handing
-        self.message_reader = message_bus.subscribe()
+        # Setup command handing
+        self.command_reader = command_bus.subscribe()
 
         # Setup RGB LED's
         self.pixels.fill(self.hsv_to_rgb(config.RGB_LIGHTS["DEFAULT_HUE"], 1, 1))
@@ -33,12 +33,12 @@ class ConfigurableHue(LightingProgram):
         return int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
 
     def advance(self):
-        for message in self.message_reader:
-            if message.type == MessageType.COMMAND and message.command == CommandType.HUE_SET:
-                color = self.hsv_to_rgb(message.metadata["hue"], 1, 1)
+        for command in self.command_reader:
+            if command.type == CommandType.HUE_SET:
+                color = self.hsv_to_rgb(command.metadata["hue"], 1, 1)
 
                 self.pixels.fill(color)
                 self.pixels.show()
 
     def deinit(self):
-        self.message_reader.unsubscribe()
+        self.command_reader.unsubscribe()

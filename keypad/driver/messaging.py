@@ -4,24 +4,21 @@ import config
 from task import Task
 
 
-class MessageType:
+class InputType:
     KEY_PRESSED = 1
     KEY_RELEASED = 2
     ENCODER_CHANGED = 3
     ERROR = 4
-    COMMAND = 5
 
     def to_string(message_type: int):
-        if message_type == MessageType.KEY_PRESSED:
+        if message_type == InputType.KEY_PRESSED:
             return "KEY_PRESSED"
-        elif message_type == MessageType.KEY_RELEASED:
+        elif message_type == InputType.KEY_RELEASED:
             return "KEY_RELEASED"
-        elif message_type == MessageType.ENCODER_CHANGED:
+        elif message_type == InputType.ENCODER_CHANGED:
             return "ENCODER_CHANGED"
-        elif message_type == MessageType.ERROR:
+        elif message_type == InputType.ERROR:
             return "ERROR"
-        elif message_type == MessageType.COMMAND:
-            return "COMMAND"
 
 class CommandType:
     SEND_KEYCODE = 1
@@ -33,6 +30,7 @@ class CommandType:
     LIGHTING_PROGRAM_NEXT = 7
     LIGHTING_PROGRAM_LAST = 8
     FLAG_SET = 9
+    LOG = 10
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -53,126 +51,133 @@ class CommandType:
             return "LIGHTING_PROGRAM_LAST"
         elif command_type == CommandType.FLAG_SET:
             return "FLAG_SET"
+        elif command_type == CommandType.LOG:
+            return "LOG"
 
 
-class Message:
-    def __init__(self, id: int, message_type: MessageType, metadata: dict, command: CommandType = None):
+class Command:
+    def __init__(self, id: int, command_type: CommandType, metadata: dict):
         self.id: int = id
-        self.type: MessageType = message_type
+        self.type: dict = command_type
         self.metadata: dict = metadata
-        self.command: dict = command
 
     def __str__(self) -> str:
-        return "#{} type={} command={} metadata={}".format(self.id, MessageType.to_string(self.type), CommandType.to_string(self.command), json.dumps(self.metadata))
+        return "#{} command={} metadata={}".format(self.id, CommandType.to_string(self.type), json.dumps(self.metadata))
 
-class MessageReader:
-    def __init__(self, message_bus):
-        self.message_bus = message_bus
+class CommandReader:
+    def __init__(self, command_bus):
+        self.command_bus = command_bus
 
-        if len(self.message_bus.messages) > 0:
-            self.read_head = min(self.message_bus.messages)
-        else:
-            self.read_head = 0
+        self.read_head = 0
 
     def __iter__(self):
         return self
 
-    def __next__(self) -> Message:
-        if self.read_head <= self.message_bus.last_id:
-            message = self.message_bus.messages[self.read_head]
+    def __next__(self) -> Command:
+        if len(self.command_bus.commands) > 0 and self.read_head <= self.command_bus.last_id:
+            if self.read_head not in self.command_bus.commands:
+                # if the command at the readhead does not exist any more, set the read head to the oldest message
+                self.read_head = min(self.command_bus.commands)
+
+            command = self.command_bus.commands[self.read_head]
             self.read_head += 1
 
-            return message
+            return command
         else:
             raise StopIteration
 
     def unsubscribe(self):
-        self.message_bus.readers.remove(self)
+        self.command_bus.readers.remove(self)
 
-class MessageBus(Task):
+class CommandBus(Task):
     UPDATE_TIME = 1
 
     def __init__(self):
-        self.messages = {}
+        self.commands = {}
         self.readers = []
-        self.mediator = MessageCommandMediator(self)
+        self.command_generator = CommandGenerator(self)
 
         self.last_id = -1
 
-    def push(self, message_type: MessageType, command=None, **metadata: dict):
+    def trigger(self, input_type: InputType, **metadata: dict):
+        self.command_generator.handle_message(input_type, metadata)
+
+    def push(self, command_type: CommandType, **metadata: dict):
         self.last_id += 1
-        message = Message(self.last_id, message_type, metadata, command)
+        command = Command(self.last_id, command_type, metadata)
 
-        self.messages[message.id] = message
+        self.commands[command.id] = command
 
-        self.mediator.handle_message(message)
+    def subscribe(self) -> CommandReader:
+        # Subcribe to the bus. The caller commits to consume all commands as soon as posible
 
-    def subscribe(self) -> MessageReader:
-        # Subcribe to the bus. The caller commits to consume all events as soon as posible
-
-        reader = MessageReader(self)
+        reader = CommandReader(self)
         self.readers.append(reader)
 
         return reader
 
     def _cleanup(self):
-        oldest_read_message = min(self.readers, key=lambda r: r.read_head).read_head
-        newest_message = self.last_id
+        if len(self.readers) == 0:
+            return
 
-        # max will remove newer messages if buffer size is reached or if every reader consumed them
-        # this means some messages meight be lost when buffer size is reached but not every reader consumed them
-        newest_allowed_message = max(oldest_read_message, newest_message - config.MESSAGE_BUS["BUFFER_SIZE"])
+        oldest_read_head = min(map(lambda r: r.read_head, self.readers))
+        newest_command = self.last_id
 
-        for id, message in list(self.messages.items()):
-            if message.id < newest_allowed_message:
-                del self.messages[id]
+        # max will remove old commands if buffer size is reached or if every reader consumed them
+        # this means some commands meight be lost when buffer size is reached but not every reader consumed them
+        newest_allowed_command = max(oldest_read_head, newest_command - config.COMMAND_BUS["BUFFER_SIZE"])
+
+        if len(self.commands) - 2 > config.COMMAND_BUS["BUFFER_SIZE"]:
+            self.push(CommandType.LOG, level="WARN", message="The command bus is overflowing, some commands will be lost", source="CommandBus")
+
+        for id, command in list(self.commands.items()):
+            if command.id < newest_allowed_command:
+                del self.commands[id]
 
     async def advance(self):
         self._cleanup()
 
 
-class MessageCommandMediator:
-    def __init__(self, message_bus: MessageBus):
-        self.message_bus = message_bus
+class CommandGenerator:
+    def __init__(self, command_bus: CommandBus):
+        self.command_bus = command_bus
 
-    def handle_message(self, message: Message):
-        if message.type == MessageType.COMMAND:
-            return
-
-        elif message.type == MessageType.KEY_PRESSED:
-            if message.metadata["row"] == 0 and message.metadata["column"] == 4:
+    def handle_message(self, message_type: InputType, metadata: dict):
+        if message_type == InputType.KEY_PRESSED:
+            if metadata["row"] == 0 and metadata["column"] == 4:
                 # upper rotary encoder
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.LIGHTING_PROGRAM_LAST)
-            elif message.metadata["row"] == 1 and message.metadata["column"] == 4:
+                self.command_bus.push(CommandType.LIGHTING_PROGRAM_LAST)
+            elif metadata["row"] == 1 and metadata["column"] == 4:
                 # lower rotary encoder
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.LIGHTING_PROGRAM_NEXT)
+                self.command_bus.push(CommandType.LIGHTING_PROGRAM_NEXT)
             else:
-                keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=True, release=False, keycode=keycode)
+                keycode = config.KEYBOARD["KEYMAP"][metadata["row"]][metadata["column"]]
+                self.command_bus.push(CommandType.SEND_KEYCODE, press=True, release=False, keycode=keycode)
 
-        elif message.type == MessageType.KEY_RELEASED:
-            if message.metadata["row"] == 0 and message.metadata["column"] == 4:
+        elif message_type == InputType.KEY_RELEASED:
+            if metadata["row"] == 0 and metadata["column"] == 4:
                 # upper rotary encoder
                 return
-            elif message.metadata["row"] == 1 and message.metadata["column"] == 4:
+            elif metadata["row"] == 1 and metadata["column"] == 4:
                 # lower rotary encoder
                 return
             else:
-                keycode = config.KEYBOARD["KEYMAP"][message.metadata["row"]][message.metadata["column"]]
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.SEND_KEYCODE, press=False, release=True, keycode=keycode)
+                keycode = config.KEYBOARD["KEYMAP"][metadata["row"]][metadata["column"]]
+                self.command_bus.push(CommandType.SEND_KEYCODE, press=False, release=True, keycode=keycode)
 
-        elif message.type == MessageType.ENCODER_CHANGED:
-            if message.metadata["id"] == 0:
-                hue = ((config.RGB_LIGHTS["DEFAULT_HUE"] + message.metadata["position"]) % 64) / 64
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.HUE_SET, hue=hue)
-                self.message_bus.push(MessageType.COMMAND, command=CommandType.FLAG_SET)
+        elif message_type == InputType.ENCODER_CHANGED:
+            if metadata["id"] == 0:
+                hue = ((config.RGB_LIGHTS["DEFAULT_HUE"] + metadata["position"]) % 64) / 64
+                self.command_bus.push(CommandType.HUE_SET, hue=hue)
+                self.command_bus.push(CommandType.FLAG_SET)
 
-            elif message.metadata["id"] == 1:
-                if message.metadata["delta"] > 0:
-                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_UP, value=0.05)
+            elif metadata["id"] == 1:
+                if metadata["delta"] > 0:
+                    self.command_bus.push(CommandType.BRIGHTNESS_UP, value=0.05)
                 else:
-                    self.message_bus.push(MessageType.COMMAND, command=CommandType.BRIGHTNESS_DOWN, value=0.05)
+                    self.command_bus.push(CommandType.BRIGHTNESS_DOWN, value=0.05)
 
 
-        elif message.type == MessageType.ERROR:
-            self.message_bus.push(MessageType.COMMAND, command=CommandType.STATUS_BLINK, count=3)
+        elif message_type == InputType.ERROR:
+            self.command_bus.push(CommandType.STATUS_BLINK, count=3)
+            self.command_bus.push(CommandType.LOG, level="ERROR", **metadata)

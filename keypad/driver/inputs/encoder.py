@@ -2,15 +2,13 @@ import config
 import rotaryio
 
 from task import Task
-from messaging import MessageBus, MessageType
+from messaging import CommandBus, InputType
 
 
-class RotaryEncoderProvider(Task):
-    UPDATE_TIME = 0.01
-
-    def __init__(self, message_bus: MessageBus):
-        # Setup message bus
-        self.message_bus = message_bus
+class RotaryEncoderInput(Task):
+    def __init__(self, command_bus: CommandBus):
+        # Setup command bus
+        self.command_bus = command_bus
 
         # Setup encoders
         self.encoders = []
@@ -28,6 +26,6 @@ class RotaryEncoderProvider(Task):
             new_position = encoder.position
 
             if new_position != self.state[i]:
-                self.message_bus.push(MessageType.ENCODER_CHANGED, id=i, position=new_position, delta=(new_position - self.state[i]))
+                self.command_bus.trigger(InputType.ENCODER_CHANGED, id=i, position=new_position, delta=(new_position - self.state[i]))
 
             self.state[i] = new_position
