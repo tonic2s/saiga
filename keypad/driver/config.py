@@ -1,6 +1,7 @@
 import board
 from actions.basic import *
 from actions.media import *
+from actions.modifiers import *
 from actions.rgb_lighting import *
 from actionmap import EncoderActionLayer, EncoderActionMap, KeyboardActionLayer, KeyboardActionMap
 

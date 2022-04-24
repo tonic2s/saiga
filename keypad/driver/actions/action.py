@@ -38,3 +38,15 @@ class CommandAction(AbstractAction):
 
     def deactivate(self) -> tuple[Command]:
         return tuple()
+
+
+class WrappedAction(AbstractAction):
+    def __init__(self, outer_action: AbstractAction, inner_action: AbstractAction):
+        self.inner_action = inner_action
+        self.outer_action = outer_action
+
+    def activate(self) -> tuple[Command]:
+        return self.outer_action.activate() + self.inner_action.activate()
+
+    def deactivate(self) -> tuple[Command]:
+        return self.inner_action.deactivate() + self.outer_action.deactivate()
