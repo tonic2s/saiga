@@ -19,9 +19,9 @@ class USBKeyboardDevice(Task):
             try:
                 if command.type == CommandType.SEND_KEYCODE:
                     if command.metadata["press"]:
-                        self.kbd.press(*command.metadata["keycode"])
+                        self.kbd.press(command.metadata["keycode"])
                     elif command.metadata["release"]:
-                        self.kbd.release(*command.metadata["keycode"])
+                        self.kbd.release(command.metadata["keycode"])
 
             except ValueError as e:
                 self.kbd.release_all()

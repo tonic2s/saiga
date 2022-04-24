@@ -8,13 +8,12 @@ from lighting.hue import ConfigurableHue
 from lighting.flag import SelectableFlag
 from lighting.rainbow import RainbowAnimation
 
+from animation.plain import Plain
 from animation.pulse import Pulse
 
 
 class AccentLight(TimedTask):
     def __init__(self, command_bus: CommandBus):
-        super().__init__()
-
         # Setup message handing
         self.command_bus = command_bus
         self.command_reader = self.command_bus.subscribe()
@@ -39,6 +38,7 @@ class AccentLight(TimedTask):
 
         # Setup animation list
         self.animations = [
+            Plain,
             Pulse
         ]
 
@@ -71,26 +71,6 @@ class AccentLight(TimedTask):
 
             elif command.type == CommandType.BRIGHTNESS_SET:
                 self.brightness = min(1.0, max(0.0, command.metadata["value"]))
-                self.pixels.brightness = self.brightness
-                self.pixels.show()
-
-            elif command.type == CommandType.BRIGHTNESS_UP:
-                if "delta" in command.metadata:
-                    delta = command.metadata["delta"]
-                else:
-                    delta = 0.025
-
-                self.brightness = min(1.0, self.brightness + delta)
-                self.pixels.brightness = self.brightness
-                self.pixels.show()
-
-            elif command.type == CommandType.BRIGHTNESS_DOWN:
-                if "delta" in command.metadata:
-                    delta = command.metadata["delta"]
-                else:
-                    delta = 0.025
-
-                self.brightness = max(0.0, self.brightness - delta)
                 self.pixels.brightness = self.brightness
                 self.pixels.show()
 

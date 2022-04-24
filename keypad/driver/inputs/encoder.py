@@ -13,7 +13,7 @@ class RotaryEncoderInput(Task):
         # Setup encoders
         self.encoders = []
 
-        for a_pin, b_pin in config.ENCODERS["AB_PINS"]:
+        for a_pin, b_pin in zip(config.ENCODERS["A_PINS"], config.ENCODERS["B_PINS"]):
             self.encoders.append(
                 rotaryio.IncrementalEncoder(a_pin, b_pin, divisor=config.ENCODERS["DIVISOR"])
             )

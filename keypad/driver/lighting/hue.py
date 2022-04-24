@@ -7,14 +7,16 @@ from messaging import CommandBus, InputType, CommandType
 
 class ConfigurableHue(LightingProgram):
     def __init__(self, pixels: NeoPixel, command_bus: CommandBus):
-        self.pixels = pixels
-
         # Setup command handing
         self.command_reader = command_bus.subscribe()
 
+        # Color state
+        self.hue = config.RGB_LIGHTS["DEFAULT_HUE"]
+        self.saturation = 1
+
         # Setup RGB LED's
-        self.pixels.fill(self.hsv_to_rgb(config.RGB_LIGHTS["DEFAULT_HUE"], 1, 1))
-        self.pixels.show()
+        self.pixels = pixels
+        self.update_color()
 
     def hsv_to_rgb(self, hue, saturation, value):
         # Source: https://stackoverflow.com/a/26856771/3593881
@@ -32,13 +34,26 @@ class ConfigurableHue(LightingProgram):
 
         return int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
 
+    def update_color(self):
+        color = self.hsv_to_rgb(self.hue, self.saturation, 1)
+
+        self.pixels.fill(color)
+        self.pixels.show()
+
     def advance(self):
         for command in self.command_reader:
-            if command.type == CommandType.HUE_SET:
-                color = self.hsv_to_rgb(command.metadata["hue"], 1, 1)
-
-                self.pixels.fill(color)
+            if command.type == CommandType.BRIGHTNESS_CHANGE:
+                self.pixels.brightness = max(0, min(1, self.pixels.brightness + command.metadata["delta"]))
                 self.pixels.show()
+
+            if command.type == CommandType.HUE_CHANGE:
+                self.hue = (self.hue + command.metadata["delta"]) % 1
+
+                self.update_color()
+            if command.type == CommandType.SATURATION_CHANGE:
+                self.saturation = max(0, min(1, self.saturation + command.metadata["delta"]))
+
+                self.update_color()
 
     def deinit(self):
         self.command_reader.unsubscribe()

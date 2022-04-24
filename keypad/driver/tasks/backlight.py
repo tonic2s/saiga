@@ -9,6 +9,7 @@ class Backlight(Task):
     UPDATE_TIME = 1
 
     def __init__(self):
+        # TODO: implement pwm for single color backlight
         # https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/#pulseio.PWMOut
 
         # Setup background LED's

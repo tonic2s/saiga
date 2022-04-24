@@ -47,16 +47,16 @@ class SaigaKeyboard(Task):
             for column_number, col in enumerate(columns):
                 is_pressed = col.value
 
-                if state[row_number][column_number] != is_pressed:
-                    state[row_number][column_number] = int(is_pressed)
+                if self.state[row_number][column_number] != is_pressed:
+                    self.state[row_number][column_number] = int(is_pressed)
 
                     try:
                         if is_pressed:
-                            kbd.press(*keymap[row_number][column_number])
+                            self.kbd.press(*self.keymap[row_number][column_number])
                         else:
-                            kbd.release(*keymap[row_number][column_number])
+                            self.kbd.release(*self.keymap[row_number][column_number])
                     except ValueError as e:
-                        kbd.release_all()
+                        self.kbd.release_all()
                         print(e)
 
                     self.state_has_changed = True
@@ -64,5 +64,5 @@ class SaigaKeyboard(Task):
             row.value = False
 
         if self.state_has_changed:
-            print(state)
+            print(self.state)
             self.state_has_changed = False

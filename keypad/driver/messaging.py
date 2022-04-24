@@ -23,26 +23,27 @@ class InputType:
 class CommandType:
     SEND_KEYCODE = 1
     BRIGHTNESS_SET = 2
-    BRIGHTNESS_UP = 3
-    BRIGHTNESS_DOWN = 4
-    HUE_SET = 5
+    BRIGHTNESS_CHANGE = 3
+    HUE_CHANGE = 4
+    SATURATION_CHANGE = 5
     STATUS_BLINK = 6
     LIGHTING_PROGRAM_NEXT = 7
     LIGHTING_PROGRAM_LAST = 8
     FLAG_SET = 9
     LOG = 10
+    SEND_CONSUMER_CONTROL = 11
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
             return "SEND_KEYCODE"
         elif command_type == CommandType.BRIGHTNESS_SET:
             return "BRIGHTNESS_SET"
-        elif command_type == CommandType.BRIGHTNESS_UP:
-            return "BRIGHTNESS_UP"
-        elif command_type == CommandType.BRIGHTNESS_DOWN:
-            return "BRIGHTNESS_DOWN"
-        elif command_type == CommandType.HUE_SET:
-            return "HUE_SET"
+        elif command_type == CommandType.BRIGHTNESS_CHANGE:
+            return "BRIGHTNESS_CHANGE"
+        elif command_type == CommandType.HUE_CHANGE:
+            return "HUE_CHANGE"
+        elif command_type == CommandType.SATURATION_CHANGE:
+            return "SATURATION_CHANGE"
         elif command_type == CommandType.STATUS_BLINK:
             return "STATUS_BLINK"
         elif command_type == CommandType.LIGHTING_PROGRAM_NEXT:
@@ -53,13 +54,15 @@ class CommandType:
             return "FLAG_SET"
         elif command_type == CommandType.LOG:
             return "LOG"
+        elif command_type == CommandType.SEND_CONSUMER_CONTROL:
+            return "SEND_CONSUMER_CONTROL"
 
 
 class Command:
-    def __init__(self, id: int, command_type: CommandType, metadata: dict):
-        self.id: int = id
+    def __init__(self, command_type: CommandType, metadata: dict = None, **kwargs: dict):
+        self.id: int = None
         self.type: dict = command_type
-        self.metadata: dict = metadata
+        self.metadata: dict = metadata if metadata is not None else kwargs
 
     def __str__(self) -> str:
         return "#{} command={} metadata={}".format(self.id, CommandType.to_string(self.type), json.dumps(self.metadata))
@@ -95,16 +98,29 @@ class CommandBus(Task):
     def __init__(self):
         self.commands = {}
         self.readers = []
-        self.command_generator = CommandGenerator(self)
+        self.input_handlers: list[AbstractInputHandler] = [
+            config.KEYBOARD["ACTION_MAP"],
+            config.ENCODERS["ACTION_MAP"]
+        ]
 
         self.last_id = -1
 
     def trigger(self, input_type: InputType, **metadata: dict):
-        self.command_generator.handle_message(input_type, metadata)
+        for input_handler in self.input_handlers:
+            for command in input_handler.handle_input(input_type, metadata):
+                self._push_command(command)
+
+        if input_type == InputType.ERROR:
+            self.push(CommandType.STATUS_BLINK, count=3)
+            self.push(CommandType.LOG, level="ERROR", **metadata)
 
     def push(self, command_type: CommandType, **metadata: dict):
+        command = Command(command_type, metadata)
+        self._push_command(command)
+
+    def _push_command(self, command: Command):
         self.last_id += 1
-        command = Command(self.last_id, command_type, metadata)
+        command.id = self.last_id
 
         self.commands[command.id] = command
 
@@ -138,46 +154,6 @@ class CommandBus(Task):
         self._cleanup()
 
 
-class CommandGenerator:
-    def __init__(self, command_bus: CommandBus):
-        self.command_bus = command_bus
-
-    def handle_message(self, message_type: InputType, metadata: dict):
-        if message_type == InputType.KEY_PRESSED:
-            if metadata["row"] == 0 and metadata["column"] == 4:
-                # upper rotary encoder
-                self.command_bus.push(CommandType.LIGHTING_PROGRAM_LAST)
-            elif metadata["row"] == 1 and metadata["column"] == 4:
-                # lower rotary encoder
-                self.command_bus.push(CommandType.LIGHTING_PROGRAM_NEXT)
-            else:
-                keycode = config.KEYBOARD["KEYMAP"][metadata["row"]][metadata["column"]]
-                self.command_bus.push(CommandType.SEND_KEYCODE, press=True, release=False, keycode=keycode)
-
-        elif message_type == InputType.KEY_RELEASED:
-            if metadata["row"] == 0 and metadata["column"] == 4:
-                # upper rotary encoder
-                return
-            elif metadata["row"] == 1 and metadata["column"] == 4:
-                # lower rotary encoder
-                return
-            else:
-                keycode = config.KEYBOARD["KEYMAP"][metadata["row"]][metadata["column"]]
-                self.command_bus.push(CommandType.SEND_KEYCODE, press=False, release=True, keycode=keycode)
-
-        elif message_type == InputType.ENCODER_CHANGED:
-            if metadata["id"] == 0:
-                hue = ((config.RGB_LIGHTS["DEFAULT_HUE"] + metadata["position"]) % 64) / 64
-                self.command_bus.push(CommandType.HUE_SET, hue=hue)
-                self.command_bus.push(CommandType.FLAG_SET)
-
-            elif metadata["id"] == 1:
-                if metadata["delta"] > 0:
-                    self.command_bus.push(CommandType.BRIGHTNESS_UP, value=0.05)
-                else:
-                    self.command_bus.push(CommandType.BRIGHTNESS_DOWN, value=0.05)
-
-
-        elif message_type == InputType.ERROR:
-            self.command_bus.push(CommandType.STATUS_BLINK, count=3)
-            self.command_bus.push(CommandType.LOG, level="ERROR", **metadata)
+class AbstractInputHandler:
+    def handle_input(self, message_type: InputType, metadata: dict):
+        raise NotImplementedError()

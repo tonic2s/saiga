@@ -18,8 +18,6 @@ class SelectableFlag(LightingProgram):
              self.pixels[i] = self.flag[self.step][16-i]
         self.pixels.show()
 
-        print(type(self.flag))
-
     def advance(self):
         for command in self.command_reader:
             if command.type == CommandType.FLAG_SET:
