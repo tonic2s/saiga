@@ -29,6 +29,30 @@ class HIDConsumerControlAction(AbstractAction):
         return tuple()
 
 
+class HIDMouseButtonAction(AbstractAction):
+    def __init__(self, button):
+        self.button = button
+
+    def activate(self) -> tuple[Command]:
+        return (Command(CommandType.SEND_MOUSE_BUTTON, press=True, release=False, button=self.button), )
+
+    def deactivate(self) -> tuple[Command]:
+        return (Command(CommandType.SEND_MOUSE_BUTTON, press=False, release=True, button=self.button), )
+
+
+class HIDMouseMoveAction(AbstractAction):
+    def __init__(self, x: int = 0, y: int = 0, wheel: int = 0):
+        self.x = x
+        self.y = y
+        self.wheel = wheel
+
+    def activate(self) -> tuple[Command]:
+        return (Command(CommandType.MOUSE_MOVE, x=self.x, y=self.y, wheel=self.wheel), )
+
+    def deactivate(self) -> tuple[Command]:
+        return tuple()
+
+
 class CommandAction(AbstractAction):
     def __init__(self, command_type: CommandType, **metadata: dict):
         self.command = Command(command_type, metadata)

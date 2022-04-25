@@ -32,6 +32,8 @@ class CommandType:
     FLAG_SET = 9
     LOG = 10
     SEND_CONSUMER_CONTROL = 11
+    MOUSE_MOVE = 12
+    SEND_MOUSE_BUTTON = 13
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -56,6 +58,10 @@ class CommandType:
             return "LOG"
         elif command_type == CommandType.SEND_CONSUMER_CONTROL:
             return "SEND_CONSUMER_CONTROL"
+        elif command_type == CommandType.MOUSE_MOVE:
+            return "MOUSE_MOVE"
+        elif command_type == CommandType.SEND_MOUSE_BUTTON:
+            return "SEND_MOUSE_BUTTON"
 
 
 class Command:

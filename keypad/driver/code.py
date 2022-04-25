@@ -37,6 +37,10 @@ try:
         from tasks.consumer_control import ConsumerControlDevice
         tasks.append(ConsumerControlDevice(command_bus))
 
+    if config.MOUSE["ENABLED"]:
+        from tasks.mouse import MouseDevice
+        tasks.append(MouseDevice(command_bus))
+
     if config.BACKLIGHT["ENABLED"]:
         from tasks.backlight import Backlight
         tasks.append(Backlight())

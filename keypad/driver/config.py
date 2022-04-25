@@ -1,6 +1,7 @@
 import board
 from actions.basic import *
 from actions.media import *
+from actions.mouse import *
 from actions.modifiers import *
 from actions.rgb_lighting import *
 from actionmap import EncoderActionLayer, EncoderActionMap, KeyboardActionLayer, KeyboardActionMap
@@ -27,8 +28,8 @@ KEYBOARD = {
     ],
     "ACTION_MAP": KeyboardActionMap(
         BASE=KeyboardActionLayer(
-            (RGB_MODE_FORWARD, KC_NUM,  RGB_SAI,     RGB_SAD,        KC_KP_MINUS),
-            (RGB_MODE_REVERSE, KC_KP_7, KC_KP_8,     KC_KP_9,        XXXXXXX    ),
+            (KC_MS_BTN_LEFT  , KC_NUM,  RGB_SAI,     RGB_SAD,        KC_KP_MINUS),
+            (KC_MS_BTN_RIGHT , KC_KP_7, KC_KP_8,     KC_KP_9,        XXXXXXX    ),
             (XXXXXXX         , KC_KP_4, KC_KP_5,     KC_KP_6,        KC_KP_PLUS ),
             (XXXXXXX         , KC_KP_1, KC_KP_2,     KC_KP_3,        XXXXXXX    ),
             (XXXXXXX         , KC_KP_0, XXXXXXX,     KC_KP_DOT,      KC_KP_ENTER)
@@ -43,8 +44,12 @@ KEYBOARD = {
     )
 }
 
-CONSUMER_CONTROL = {
+MOUSE = {
     "ENABLED": True
+}
+
+CONSUMER_CONTROL = {
+    "ENABLED": False
 }
 
 ENCODERS = {
@@ -59,8 +64,8 @@ ENCODERS = {
     "DIVISOR": 2,
     "ACTION_MAP": EncoderActionMap(
         BASE=EncoderActionLayer(
-            (KC_AUDIO_VOL_UP, KC_AUDIO_VOL_DOWN),
-            (KC_MEDIA_NEXT_TRACK, KC_MEDIA_PREV_TRACK)
+            (KC_MS_UP, KC_MS_DOWN),
+            (KC_MS_LEFT, KC_MS_RIGHT)
         ),
         CONTROL=EncoderActionLayer(
             (KC_KP_1, KC_KP_2),
