@@ -1,107 +1,134 @@
-from actions import *
-from actions.action import AbstractAction
-from messaging import AbstractInputHandler, Command, InputType
+from actions.action import AbstractAction, AbstractLayerAction
+from messaging import AbstractInputHandler, InputType
+
+
+class LayerStateManager:
+    def __init__(self):
+        self.layer_enabled = {}
+
+    def register_layers(self, layer_state: dict[str, bool]):
+        for layer_name, enabled in layer_state.items():
+            self.layer_enabled[layer_name] = enabled
+
+    def is_layer_enabled(self, layer_name) -> bool:
+        return self.layer_enabled[layer_name]
+
+    def set_layer_state(self, layer_name, is_enabled):
+        self.layer_enabled[layer_name] = is_enabled
+
+    def toggle_layer_state(self, layer_name):
+        self.layer_enabled[layer_name] = not self.layer_enabled[layer_name]
+
+LAYER_STATE_MANAGER = LayerStateManager()
 
 
 class KeyboardActionLayer:
-    def __init__(self, *map_rows: list[list[AbstractAction]], is_enabled=False):
-        self.is_enabled = is_enabled
+    def __init__(self, *map_rows: list[list[AbstractAction]], default_enabled=False):
+        self.default_enabled = default_enabled
         self.action_lookup: list[list[AbstractAction]] = map_rows
 
-    def activate(self, row, column) -> tuple[Command]:
-        keycode = self.action_lookup[row][column]
-
-        if keycode:
-            return keycode.activate()
-        return tuple()
-
-    def deactivate(self, row, column) -> tuple[Command]:
-        keycode = self.action_lookup[row][column]
-
-        if keycode:
-            return keycode.deactivate()
-        return tuple()
+    def get_action(self, row, column) -> AbstractAction:
+        return self.action_lookup[row][column]
 
 class KeyboardActionMap(AbstractInputHandler):
     def __init__(self, **layers: dict[str, KeyboardActionLayer]):
-        self.layers: dict[str, KeyboardActionLayer] = layers
+        # NOTE: Assumes that function parameter and dicts are ordered
 
-        # Assumes function parameter are ordered!
-        self.layer_order = list(self.layers.keys())
-        self.default_layer = self.layer_order[0]
-        self.layers[self.default_layer].is_enabled = True
+        self.layers: dict[str, KeyboardActionLayer] = layers
+        self.default_layer = next(iter(self.layers))
+
+        layer_enabled = { layer_name: layer.default_enabled for layer_name, layer in self.layers.items() }
+        layer_enabled[self.default_layer] = True
+
+        LAYER_STATE_MANAGER.register_layers(layer_enabled)
+
+    def is_layer_enabled(self, layer_name):
+        return LAYER_STATE_MANAGER.is_layer_enabled(layer_name)
+
+    def get_action(self, row, column):
+        result_action = None
+
+        # NOTE: Assumes that the default layer is always enabled
+        for layer_name, layer in self.layers.items():
+            if self.is_layer_enabled(layer_name):
+                action = layer.get_action(row, column)
+
+                if action is not None:
+                    result_action = action
+
+        return result_action
 
     def handle_input(self, message_type: InputType, metadata: dict):
         if message_type == InputType.KEY_PRESSED:
-            return self.layers[self.default_layer].activate(metadata["row"], metadata["column"])
+            action = self.get_action(metadata["row"], metadata["column"])
+            if action is None:
+                return tuple()
+            elif isinstance(action, AbstractLayerAction):
+                action.activate(LAYER_STATE_MANAGER)
+                return tuple()
+            else:
+                return action.activate()
 
         elif message_type == InputType.KEY_RELEASED:
-            return self.layers[self.default_layer].deactivate(metadata["row"], metadata["column"])
+            action = self.get_action(metadata["row"], metadata["column"])
+            if action is None:
+                return tuple()
+            elif isinstance(action, AbstractLayerAction):
+                action.deactivate(LAYER_STATE_MANAGER)
+                return tuple()
+            else:
+                return action.deactivate()
 
-        else:
-            return tuple()
+        return tuple()
 
 
 class EncoderActionLayer:
-    def __init__(self, *action_lookup: list[tuple[AbstractAction]], is_enabled=False):
-        self.is_enabled = is_enabled
+    def __init__(self, *action_lookup: list[tuple[AbstractAction]], default_enabled=False):
+        self.default_enabled = default_enabled
         self.action_lookup = action_lookup
 
-    def activate(self, id, delta) -> tuple[Command]:
+    def get_action(self, id, delta) -> AbstractAction:
         if delta > 0:
             # encoder position increased
-            action = self.action_lookup[id][0]
+            return self.action_lookup[id][0]
         else:
             # encoder position decreased
-            action = self.action_lookup[id][1]
-
-        return action.activate() + action.deactivate()
-
-    def deactivate(self, row, column) -> tuple[Command]:
-        return tuple()
+            return self.action_lookup[id][1]
 
 
 class EncoderActionMap(AbstractInputHandler):
     def __init__(self, **layers: dict[str, EncoderActionLayer]):
-        self.layers: dict[str, EncoderActionLayer] = layers
+        # NOTE: Assumes that function parameter and dicts are ordered
 
-        # Assumes function parameter are ordered!
-        self.layer_order = list(self.layers.keys())
-        self.default_layer = self.layer_order[0]
-        self.layers[self.default_layer].is_enabled = True
+        self.layers: dict[str, EncoderActionLayer] = layers
+        self.default_layer = next(iter(self.layers))
+
+        layer_enabled = { layer_name: layer.default_enabled for layer_name, layer in self.layers.items() }
+        layer_enabled[self.default_layer] = True
+
+        LAYER_STATE_MANAGER.register_layers(layer_enabled)
+
+    def is_layer_enabled(self, layer_name):
+        return LAYER_STATE_MANAGER.is_layer_enabled(layer_name)
+
+    def get_action(self, id, delta):
+        result_action = None
+
+        # NOTE: Assumes that default layer is always enabled
+        for layer_name, layer in self.layers.items():
+            if self.is_layer_enabled(layer_name):
+                action = layer.get_action(id, delta)
+
+                if action is not None:
+                    result_action = action
+
+        return result_action
 
     def handle_input(self, message_type: InputType, metadata: dict):
         if message_type == InputType.ENCODER_CHANGED:
-            return self.layers[self.default_layer].activate(metadata["id"], metadata["delta"])
+            action = self.get_action(metadata["id"], metadata["delta"])
 
-        else:
-            return tuple()
+            if action is not None:
+                return action.activate() + action.deactivate()
 
-
-
-# a = LayeredKeyMap(
-#     # Keymap _BL: Base Layer (Default Layer)
-#     _BL=KeyMap(
-#         F(0),    KC_1,    KC_2,   KC_3,   KC_4,   KC_5,   KC_6,   KC_7,   KC_8,   KC_9,    KC_0,     KC_MINS,  KC_EQL,   KC_GRV,    KC_BSPC,        KC_PGUP,
-#         KC_TAB,  KC_Q,    KC_W,   KC_E,   KC_R,   KC_T,   KC_Y,   KC_U,   KC_I,   KC_O,    KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,                   KC_PGDN,
-#         KC_CAPS, KC_A,    KC_S,   KC_D,   KC_F,   KC_G,   KC_H,   KC_J,   KC_K,   KC_L,    KC_SCLN,  KC_QUOT,  KC_NUHS,  KC_ENT,
-#         KC_LSFT, KC_NUBS, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_N,   KC_M,   KC_COMM, KC_DOT,   KC_SLSH,  KC_ROPT,  KC_RSFT,             KC_UP,
-#         KC_LCTL, KC_LGUI, KC_LALT, _______,          KC_SPC,KC_SPC,                        _______,  KC_RALT,  KC_RCTL,  MO("_FL"), KC_LEFT, KC_DOWN, KC_RGHT
-#     ),
-#     # Keymap _FL: Function Layer
-#     _FL=KeyMap(
-#         KC_GRV,  KC_F1,   KC_F2,    KC_F3,  KC_F4,  KC_F5,  KC_F6,  KC_F7,  KC_F8,  KC_F9,   KC_F10,   KC_F11,   KC_F12,   _______, KC_DEL,           _______,
-#         _______, _______, _______  ,_______,_______,_______,_______,_______,KC_PSCR,KC_SCRL, KC_PAUS,  _______,  _______,  _______,                   _______,
-#         _______, _______, MO("_CL"),_______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  _______,
-#         _______, _______, _______  ,_______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  _______,          KC_PGUP,
-#         _______, _______, _______  ,_______,        _______,_______,                        _______,  _______,  _______,  MO("_FL"), KC_HOME, KC_PGDN, KC_END
-#     ),
-#     # Keymap _CL: Control layer
-#     _CL=KeyMap(
-#         _______,   _______, _______,  _______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  _______, RGB_TOG,          RGB_VAI,
-#         _______,   _______, _______,  _______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  _______,                   RGB_VAD,
-#         _______,   _______, MO("_CL"),_______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  _______,
-#         MO("_FL"), _______, _______,  _______,_______,_______,_______,_______,_______,_______, _______,  _______,  _______,  MO("_FL"),          RGB_SAI,
-#         _______,   _______, _______,  _______,        RGB_MOD,   RGB_MOD,                            _______,  _______,  _______,  _______, RGB_HUD,    RGB_SAD,    RGB_HUI
-#     )
-# )
+        return tuple()

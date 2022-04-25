@@ -4,6 +4,7 @@ from actions.media import *
 from actions.mouse import *
 from actions.modifiers import *
 from actions.rgb_lighting import *
+from actions.layer_switching import *
 from actionmap import EncoderActionLayer, EncoderActionMap, KeyboardActionLayer, KeyboardActionMap
 
 WATCHDOG = {
@@ -28,28 +29,35 @@ KEYBOARD = {
     ],
     "ACTION_MAP": KeyboardActionMap(
         BASE=KeyboardActionLayer(
-            (KC_MS_BTN_LEFT  , KC_NUM,  RGB_SAI,     RGB_SAD,        KC_KP_MINUS),
-            (KC_MS_BTN_RIGHT , KC_KP_7, KC_KP_8,     KC_KP_9,        XXXXXXX    ),
-            (XXXXXXX         , KC_KP_4, KC_KP_5,     KC_KP_6,        KC_KP_PLUS ),
-            (XXXXXXX         , KC_KP_1, KC_KP_2,     KC_KP_3,        XXXXXXX    ),
-            (XXXXXXX         , KC_KP_0, XXXXXXX,     KC_KP_DOT,      KC_KP_ENTER)
+            (MO("RGB"),        TG("NUM"),        KC_KP_SLASH,      KC_KP_ASTERISK,   KC_KP_MINUS       ),
+            (MO("RGB"),        KC_KP_7,          KC_KP_8,          KC_KP_9,          XXXXXXX           ),
+            (XXXXXXX,          KC_KP_4,          KC_KP_5,          KC_KP_6,          KC_KP_PLUS        ),
+            (XXXXXXX,          KC_KP_1,          KC_KP_2,          KC_KP_3,          XXXXXXX           ),
+            (XXXXXXX,          KC_KP_0,          XXXXXXX,          KC_KP_DOT,        KC_KP_ENTER       )
         ),
-        CONTROL=KeyboardActionLayer(
-            (KC_A,    KC_NUM,  KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS),
-            (KC_B,    KC_KP_7, KC_KP_8,     KC_KP_9,        XXXXXXX    ),
-            (XXXXXXX, KC_KP_4, KC_KP_5,     KC_KP_6,        KC_KP_PLUS ),
-            (XXXXXXX, KC_KP_1, KC_KP_2,     KC_KP_3,        XXXXXXX    ),
-            (XXXXXXX, KC_KP_0,              KC_KP_DOT,      KC_KP_ENTER)
+        NUM=KeyboardActionLayer(
+            (KC_TRNS,          KC_TRNS,          KC_TRNS,          KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          KC_HOME,          KC_UP,            KC_PAGE_UP,       XXXXXXX           ),
+            (XXXXXXX,          KC_LEFT,          KC_TRNS,          KC_RIGHT,         KC_TRNS           ),
+            (XXXXXXX,          KC_END,           KC_DOWN,          KC_PAGE_DOWN,     XXXXXXX           ),
+            (XXXXXXX,          KC_INSERT,        XXXXXXX,          KC_TRNS,          KC_TRNS           )
+        ),
+        RGB=KeyboardActionLayer(
+            (KC_TRNS,          RGB_TOG,          KC_TRNS,          KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          KC_TRNS,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
+            (XXXXXXX,          RGB_SAD,          KC_TRNS,          RGB_SAI,          KC_TRNS           ),
+            (XXXXXXX,          KC_TRNS,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
+            (XXXXXXX,          KC_TRNS,          XXXXXXX,          KC_TRNS,          KC_TRNS           )
         )
     )
 }
 
 MOUSE = {
-    "ENABLED": True
+    "ENABLED": False
 }
 
 CONSUMER_CONTROL = {
-    "ENABLED": False
+    "ENABLED": True
 }
 
 ENCODERS = {
@@ -64,12 +72,16 @@ ENCODERS = {
     "DIVISOR": 2,
     "ACTION_MAP": EncoderActionMap(
         BASE=EncoderActionLayer(
-            (KC_MS_UP, KC_MS_DOWN),
-            (KC_MS_LEFT, KC_MS_RIGHT)
+            (KC_AUDIO_VOL_UP, KC_AUDIO_VOL_DOWN),
+            (KC_MEDIA_NEXT_TRACK, KC_MEDIA_PREV_TRACK)
         ),
-        CONTROL=EncoderActionLayer(
-            (KC_KP_1, KC_KP_2),
-            (KC_KP_3, KC_KP_4)
+        NUM=EncoderActionLayer(
+            (KC_TRNS, KC_TRNS),
+            (KC_TRNS, KC_TRNS)
+        ),
+        RGB=EncoderActionLayer(
+            (RGB_MODE_FORWARD, RGB_MODE_REVERSE),
+            (RGB_VAI, RGB_VAD)
         )
     )
 }

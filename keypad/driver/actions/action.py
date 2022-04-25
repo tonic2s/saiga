@@ -74,3 +74,31 @@ class WrappedAction(AbstractAction):
 
     def deactivate(self) -> tuple[Command]:
         return self.inner_action.deactivate() + self.outer_action.deactivate()
+
+
+
+class AbstractLayerAction:
+    def activate(self, layer_state_manager):
+        raise NotImplementedError()
+    def deactivate(self, layer_state_manager):
+        raise NotImplementedError()
+
+class MomentaryLayerEnableAction(AbstractLayerAction):
+    def __init__(self, target_layer):
+        self.target_layer = target_layer
+
+    def activate(self, layer_state_manager):
+        layer_state_manager.set_layer_state(self.target_layer, True)
+
+    def deactivate(self, layer_state_manager):
+        layer_state_manager.set_layer_state(self.target_layer, False)
+
+class LayerToggleAction(AbstractLayerAction):
+    def __init__(self, target_layer):
+        self.target_layer = target_layer
+
+    def activate(self, layer_state_manager):
+        layer_state_manager.toggle_layer_state(self.target_layer)
+
+    def deactivate(self, layer_state_manager):
+        pass
