@@ -41,6 +41,10 @@ try:
         from tasks.mouse import MouseDevice
         tasks.append(MouseDevice(command_bus))
 
+    if config.MIDI["ENABLED"]:
+        from tasks.midi import MIDIDevice
+        tasks.append(MIDIDevice(command_bus))
+
     if config.BACKLIGHT["ENABLED"]:
         from tasks.backlight import Backlight
         tasks.append(Backlight())

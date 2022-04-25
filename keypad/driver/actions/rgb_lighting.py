@@ -52,17 +52,3 @@ RGB_M_G = RGB_MODE_GRADIENT
 # Red,Green,Blue test animation mode
 RGB_MODE_RGBTEST = None
 RGB_M_T = RGB_MODE_RGBTEST
-
-
-# See: https://docs.qmk.fm/#/feature_rgb_matrix
-# RGB_TOG 		Toggle RGB lighting on or off
-# RGB_MODE_FORWARD 	RGB_MOD 	Cycle through modes, reverse direction when Shift is held
-# RGB_MODE_REVERSE 	RGB_RMOD 	Cycle through modes in reverse, forward direction when Shift is held
-# RGB_HUI 		Increase hue, decrease hue when Shift is held
-# RGB_HUD 		Decrease hue, increase hue when Shift is held
-# RGB_SAI 		Increase saturation, decrease saturation when Shift is held
-# RGB_SAD 		Decrease saturation, increase saturation when Shift is held
-# RGB_VAI 		Increase value (brightness), decrease value when Shift is held
-# RGB_VAD 		Decrease value (brightness), increase value when Shift is held
-# RGB_SPI 		Increase effect speed (does not support eeprom yet), decrease speed when Shift is held
-# RGB_SPD 		Decrease effect speed (does not support eeprom yet), increase speed when Shift

@@ -34,6 +34,12 @@ class CommandType:
     SEND_CONSUMER_CONTROL = 11
     MOUSE_MOVE = 12
     SEND_MOUSE_BUTTON = 13
+    MIDI_PLAY_NOTE = 14
+    MIDI_CHANGE_OCTAVE = 15
+    MIDI_CHANGE_TRANSPOSITION = 16
+    MIDI_CHANGE_VELOCITY = 17
+    MIDI_CHANGE_CHANNEL = 18
+    MIDI_CONTROLLER = 19
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -62,6 +68,18 @@ class CommandType:
             return "MOUSE_MOVE"
         elif command_type == CommandType.SEND_MOUSE_BUTTON:
             return "SEND_MOUSE_BUTTON"
+        elif command_type == CommandType.MIDI_PLAY_NOTE:
+            return "MIDI_PLAY_NOTE"
+        elif command_type == CommandType.MIDI_CHANGE_OCTAVE:
+            return "MIDI_CHANGE_OCTAVE"
+        elif command_type == CommandType.MIDI_CHANGE_TRANSPOSITION:
+            return "MIDI_CHANGE_TRANSPOSITION"
+        elif command_type == CommandType.MIDI_CHANGE_VELOCITY:
+            return "MIDI_CHANGE_VELOCITY"
+        elif command_type == CommandType.MIDI_CHANGE_CHANNEL:
+            return "MIDI_CHANGE_CHANNEL"
+        elif command_type == CommandType.MIDI_CONTROLLER:
+            return "MIDI_CONTROLLER"
 
 
 class Command:

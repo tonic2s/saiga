@@ -1,4 +1,5 @@
 import board
+from actions.midi import *
 from actions.basic import *
 from actions.media import *
 from actions.mouse import *
@@ -30,7 +31,7 @@ KEYBOARD = {
     "ACTION_MAP": KeyboardActionMap(
         BASE=KeyboardActionLayer(
             (MO("RGB"),        TG("NUM"),        KC_KP_SLASH,      KC_KP_ASTERISK,   KC_KP_MINUS       ),
-            (MO("RGB"),        KC_KP_7,          KC_KP_8,          KC_KP_9,          XXXXXXX           ),
+            (TG("MIDI"),       KC_KP_7,          KC_KP_8,          KC_KP_9,          XXXXXXX           ),
             (XXXXXXX,          KC_KP_4,          KC_KP_5,          KC_KP_6,          KC_KP_PLUS        ),
             (XXXXXXX,          KC_KP_1,          KC_KP_2,          KC_KP_3,          XXXXXXX           ),
             (XXXXXXX,          KC_KP_0,          XXXXXXX,          KC_KP_DOT,        KC_KP_ENTER       )
@@ -42,9 +43,16 @@ KEYBOARD = {
             (XXXXXXX,          KC_END,           KC_DOWN,          KC_PAGE_DOWN,     XXXXXXX           ),
             (XXXXXXX,          KC_INSERT,        XXXXXXX,          KC_TRNS,          KC_TRNS           )
         ),
+        MIDI=KeyboardActionLayer(
+            (KC_TRNS,          KC_TRNS,          MI_ALLOFF,        KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          MI_D_1,           MI_C_1,           MI_B,             XXXXXXX           ),
+            (XXXXXXX,          MI_A,             MI_G,             MI_F,             KC_TRNS           ),
+            (XXXXXXX,          MI_E,             MI_D,             MI_C,             XXXXXXX           ),
+            (XXXXXXX,          MI_SUS,           XXXXXXX,          KC_TRNS,          KC_TRNS           )
+        ),
         RGB=KeyboardActionLayer(
-            (KC_TRNS,          RGB_TOG,          KC_TRNS,          KC_TRNS,          KC_TRNS           ),
-            (KC_TRNS,          KC_TRNS,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
+            (KC_TRNS,          KC_NUM_LOCK,      KC_TRNS,          KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          RGB_TOG,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
             (XXXXXXX,          RGB_SAD,          KC_TRNS,          RGB_SAI,          KC_TRNS           ),
             (XXXXXXX,          KC_TRNS,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
             (XXXXXXX,          KC_TRNS,          XXXXXXX,          KC_TRNS,          KC_TRNS           )
@@ -60,6 +68,10 @@ CONSUMER_CONTROL = {
     "ENABLED": True
 }
 
+MIDI = {
+    "ENABLED": True
+}
+
 ENCODERS = {
     "A_PINS": [
         board.GP2,
@@ -72,16 +84,20 @@ ENCODERS = {
     "DIVISOR": 2,
     "ACTION_MAP": EncoderActionMap(
         BASE=EncoderActionLayer(
-            (KC_AUDIO_VOL_UP, KC_AUDIO_VOL_DOWN),
+            (KC_AUDIO_VOL_UP,     KC_AUDIO_VOL_DOWN  ),
             (KC_MEDIA_NEXT_TRACK, KC_MEDIA_PREV_TRACK)
         ),
         NUM=EncoderActionLayer(
-            (KC_TRNS, KC_TRNS),
-            (KC_TRNS, KC_TRNS)
+            (KC_TRNS,             KC_TRNS            ),
+            (KC_TRNS,             KC_TRNS            )
+        ),
+        MIDI=EncoderActionLayer(
+            (MI_OCTU,             MI_OCTD            ),
+            (MI_TRNSU,            MI_TRNSD           )
         ),
         RGB=EncoderActionLayer(
-            (RGB_MODE_FORWARD, RGB_MODE_REVERSE),
-            (RGB_VAI, RGB_VAD)
+            (RGB_MODE_FORWARD,    RGB_MODE_REVERSE   ),
+            (RGB_VAD,             RGB_VAI            )
         )
     )
 }

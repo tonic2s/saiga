@@ -76,6 +76,32 @@ class WrappedAction(AbstractAction):
         return self.inner_action.deactivate() + self.outer_action.deactivate()
 
 
+class MidiNoteAction(AbstractAction):
+    def __init__(self, pitch: int):
+        self.pitch = pitch
+
+    def activate(self) -> tuple[Command]:
+        return (Command(CommandType.MIDI_PLAY_NOTE, on=True, pitch=self.pitch), )
+
+    def deactivate(self) -> tuple[Command]:
+        return (Command(CommandType.MIDI_PLAY_NOTE, on=False, pitch=self.pitch), )
+
+class MidiControllerAction(AbstractAction):
+    def __init__(self, controller: int, activation_value, deactivation_value = None):
+        self.controller = controller
+        self.activation_value = activation_value
+        self.deactivation_value = deactivation_value
+
+    def activate(self) -> tuple[Command]:
+        return (Command(CommandType.MIDI_CONTROLLER, controller=self.controller, value=self.activation_value), )
+
+    def deactivate(self) -> tuple[Command]:
+        if self.activation_value is None:
+            return tuple()
+        else:
+            return (Command(CommandType.MIDI_CONTROLLER, controller=self.controller, value=self.activation_value), )
+
+
 
 class AbstractLayerAction:
     def activate(self, layer_state_manager):
