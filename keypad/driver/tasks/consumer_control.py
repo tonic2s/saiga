@@ -17,7 +17,7 @@ class ConsumerControlDevice(Task):
     async def advance(self):
         for command in self.command_reader:
             try:
-                if command.type == CommandType.SEND_CONSUMER_CONTROL:
+                if command.type == CommandType.CONSUMER_CONTROL_SEND:
                     self.cc.send(command.metadata["controlcode"])
 
             except ValueError as e:

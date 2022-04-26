@@ -2,10 +2,10 @@ import config
 
 from neopixel import NeoPixel
 from lighting.program import LightingProgram
-from messaging import CommandBus, InputType, CommandType
+from messaging import CommandBus, CommandType
 
 
-class ConfigurableHue(LightingProgram):
+class PlainProgram(LightingProgram):
     def __init__(self, pixels: NeoPixel, command_bus: CommandBus):
         # Setup command handing
         self.command_reader = command_bus.subscribe()
@@ -40,17 +40,14 @@ class ConfigurableHue(LightingProgram):
         self.pixels.fill(color)
         self.pixels.show()
 
-    def advance(self):
+    def advance(self, time_delta):
         for command in self.command_reader:
-            if command.type == CommandType.BRIGHTNESS_CHANGE:
-                self.pixels.brightness = max(0, min(1, self.pixels.brightness + command.metadata["delta"]))
-                self.pixels.show()
-
-            if command.type == CommandType.HUE_CHANGE:
+            if command.type == CommandType.LIGHTING_CHANGE_HUE:
                 self.hue = (self.hue + command.metadata["delta"]) % 1
 
                 self.update_color()
-            if command.type == CommandType.SATURATION_CHANGE:
+
+            elif command.type == CommandType.LIGHTING_CHANGE_SATURATION:
                 self.saturation = max(0, min(1, self.saturation + command.metadata["delta"]))
 
                 self.update_color()

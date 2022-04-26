@@ -21,54 +21,48 @@ class InputType:
             return "ERROR"
 
 class CommandType:
-    SEND_KEYCODE = 1
-    BRIGHTNESS_SET = 2
-    BRIGHTNESS_CHANGE = 3
-    HUE_CHANGE = 4
-    SATURATION_CHANGE = 5
-    STATUS_BLINK = 6
-    LIGHTING_PROGRAM_NEXT = 7
-    LIGHTING_PROGRAM_LAST = 8
-    FLAG_SET = 9
-    LOG = 10
-    SEND_CONSUMER_CONTROL = 11
-    MOUSE_MOVE = 12
-    SEND_MOUSE_BUTTON = 13
-    MIDI_PLAY_NOTE = 14
-    MIDI_CHANGE_OCTAVE = 15
-    MIDI_CHANGE_TRANSPOSITION = 16
-    MIDI_CHANGE_VELOCITY = 17
-    MIDI_CHANGE_CHANNEL = 18
-    MIDI_CONTROLLER = 19
-    MIDI_MODULATION = 20
+    LOG = 1
+    STATUS_BLINK = 2
+    KEYBOARD_SEND_KEYCODE = 3
+    LIGHTING_CHANGE_BRIGHTNESS = 4
+    LIGHTING_CHANGE_HUE = 5
+    LIGHTING_CHANGE_SATURATION = 6
+    LIGHTING_CHANGE_PROGRAM = 7
+    LIGHTING_CHANGE_SECONDARY = 8
+    CONSUMER_CONTROL_SEND = 9
+    MOUSE_MOVE = 10
+    MOUSE_SEND_BUTTON = 11
+    MIDI_PLAY_NOTE = 12
+    MIDI_CHANGE_OCTAVE = 13
+    MIDI_CHANGE_TRANSPOSITION = 14
+    MIDI_CHANGE_VELOCITY = 15
+    MIDI_CHANGE_CHANNEL = 16
+    MIDI_CONTROLLER = 17
+    MIDI_MODULATION = 18
 
     def to_string(command_type: int):
-        if command_type == CommandType.SEND_KEYCODE:
-            return "SEND_KEYCODE"
-        elif command_type == CommandType.BRIGHTNESS_SET:
-            return "BRIGHTNESS_SET"
-        elif command_type == CommandType.BRIGHTNESS_CHANGE:
-            return "BRIGHTNESS_CHANGE"
-        elif command_type == CommandType.HUE_CHANGE:
-            return "HUE_CHANGE"
-        elif command_type == CommandType.SATURATION_CHANGE:
-            return "SATURATION_CHANGE"
+        if command_type == CommandType.LOG:
+            return "LOG"
         elif command_type == CommandType.STATUS_BLINK:
             return "STATUS_BLINK"
-        elif command_type == CommandType.LIGHTING_PROGRAM_NEXT:
-            return "LIGHTING_PROGRAM_NEXT"
-        elif command_type == CommandType.LIGHTING_PROGRAM_LAST:
-            return "LIGHTING_PROGRAM_LAST"
-        elif command_type == CommandType.FLAG_SET:
-            return "FLAG_SET"
-        elif command_type == CommandType.LOG:
-            return "LOG"
-        elif command_type == CommandType.SEND_CONSUMER_CONTROL:
-            return "SEND_CONSUMER_CONTROL"
+        elif command_type == CommandType.KEYBOARD_SEND_KEYCODE:
+            return "KEYBOARD_SEND_KEYCODE"
+        elif command_type == CommandType.LIGHTING_CHANGE_BRIGHTNESS:
+            return "LIGHTING_CHANGE_BRIGHTNESS"
+        elif command_type == CommandType.LIGHTING_CHANGE_HUE:
+            return "LIGHTING_CHANGE_HUE"
+        elif command_type == CommandType.LIGHTING_CHANGE_SATURATION:
+            return "LIGHTING_CHANGE_SATURATION"
+        elif command_type == CommandType.LIGHTING_CHANGE_PROGRAM:
+            return "LIGHTING_CHANGE_PROGRAM"
+        elif command_type == CommandType.LIGHTING_CHANGE_SECONDARY:
+            return "LIGHTING_CHANGE_SECONDARY"
+        elif command_type == CommandType.CONSUMER_CONTROL_SEND:
+            return "CONSUMER_CONTROL_SEND"
         elif command_type == CommandType.MOUSE_MOVE:
             return "MOUSE_MOVE"
-        elif command_type == CommandType.SEND_MOUSE_BUTTON:
-            return "SEND_MOUSE_BUTTON"
+        elif command_type == CommandType.MOUSE_SEND_BUTTON:
+            return "MOUSE_SEND_BUTTON"
         elif command_type == CommandType.MIDI_PLAY_NOTE:
             return "MIDI_PLAY_NOTE"
         elif command_type == CommandType.MIDI_CHANGE_OCTAVE:

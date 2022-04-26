@@ -1,3 +1,4 @@
+import config
 import usb_midi
 
 from task import Task
@@ -6,7 +7,6 @@ from messaging import CommandBus, InputType, CommandType
 import adafruit_midi
 from adafruit_midi.note_on import NoteOn
 from adafruit_midi.note_off import NoteOff
-from adafruit_midi.pitch_bend import PitchBend
 from adafruit_midi.control_change import ControlChange
 
 
@@ -16,12 +16,11 @@ class MIDIDevice(Task):
         self.command_bus = command_bus
         self.command_reader = self.command_bus.subscribe()
 
-        # Corresponds to MI_OCT_2
-        self.octave = 4
-        self.transposition = 0
-        self.velocity = 127
-        self.channel = 0
-        self.modulation_interval = 8
+        self.octave = config.MIDI["OCTAVE"]
+        self.transposition = config.MIDI["TRANSPOSITION"]
+        self.velocity = config.MIDI["VELOCITY"]
+        self.channel = config.MIDI["CHANNEL"]
+        self.modulation_interval = config.MIDI["MODULATION_INTERVAL"]
 
         # Setup mouse device
         self.midi = adafruit_midi.MIDI(

@@ -4,6 +4,8 @@ from messaging import CommandType
 # See:
 # https://docs.qmk.fm/#/feature_midi
 # https://www.cs.cmu.edu/~music/cmsip/readings/MIDI%20tutorial%20for%20programmers.html
+# https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
+# https://www.ableton.com/en/manual/midi-and-key-remote-control/
 
 
 # C octave 0

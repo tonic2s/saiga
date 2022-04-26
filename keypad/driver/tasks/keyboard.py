@@ -17,7 +17,7 @@ class USBKeyboardDevice(Task):
     async def advance(self):
         for command in self.command_reader:
             try:
-                if command.type == CommandType.SEND_KEYCODE:
+                if command.type == CommandType.KEYBOARD_SEND_KEYCODE:
                     if command.metadata["press"]:
                         self.kbd.press(command.metadata["keycode"])
                     elif command.metadata["release"]:

@@ -20,7 +20,7 @@ class MouseDevice(Task):
                 if command.type == CommandType.MOUSE_MOVE:
                     self.mouse.move(command.metadata["x"], command.metadata["y"], command.metadata["wheel"])
 
-                if command.type == CommandType.SEND_MOUSE_BUTTON:
+                if command.type == CommandType.MOUSE_SEND_BUTTON:
                     if command.metadata["press"]:
                         self.mouse.press(command.metadata["button"])
                     if command.metadata["release"]:

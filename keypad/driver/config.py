@@ -51,9 +51,9 @@ KEYBOARD = {
             (XXXXXXX,          MI_SUS,           XXXXXXX,          KC_TRNS,          KC_TRNS           )
         ),
         RGB=KeyboardActionLayer(
-            (KC_TRNS,          KC_NUM_LOCK,      KC_TRNS,          KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          KC_NUM_LOCK,      KC_TRNS,          KC_TRNS,          RGB_S_D           ),
             (KC_TRNS,          RGB_TOG,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
-            (XXXXXXX,          RGB_SAD,          KC_TRNS,          RGB_SAI,          KC_TRNS           ),
+            (XXXXXXX,          RGB_SAD,          KC_TRNS,          RGB_SAI,          RGB_S_I           ),
             (XXXXXXX,          KC_TRNS,          RGB_HUI,          KC_TRNS,          XXXXXXX           ),
             (XXXXXXX,          KC_TRNS,          XXXXXXX,          KC_TRNS,          KC_TRNS           )
         )
@@ -69,7 +69,12 @@ CONSUMER_CONTROL = {
 }
 
 MIDI = {
-    "ENABLED": True
+    "ENABLED": True,
+    "OCTAVE": 4, # Corresponds to MI_OCT_2
+    "TRANSPOSITION": 0,
+    "VELOCITY": 127,
+    "CHANNEL": 0,
+    "MODULATION_INTERVAL": 8
 }
 
 ENCODERS = {
@@ -97,7 +102,7 @@ ENCODERS = {
         ),
         RGB=EncoderActionLayer(
             (RGB_MODE_FORWARD,    RGB_MODE_REVERSE   ),
-            (RGB_VAD,             RGB_VAI            )
+            (RGB_VAI,             RGB_VAD            )
         )
     )
 }
@@ -113,11 +118,11 @@ RGB_LIGHTS = {
     "COUNT": 17,
     "BRIGHTNESS": 0.1,
     "DEFAULT_HUE": 0.085,
-    "FLAGS": {
-        "UKRAINE": [0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0xffd500,0xffd500,0xffd500,0xffd500,0xffd500,0xffd500],
-        "BLANK":   [0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff],
-        "JAPAN":   [0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xbc002d,0xbc002d,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff],
-        "TAIWAN":  [0xfe0000,0x000097,0x000097,0x000097,0x000097,0xffffff,0x000097,0xfe0000,0x000097,0x000097,0x000097,0xfe0000,0xfe0000,0xfe0000,0xfe0000,0xfe0000,0xfe0000]
+    "IMAGES": {
+        "WHITE":        [0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff],
+        "FLAG_UKRAINE": [0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0x005bbb,0xffd500,0xffd500,0xffd500,0xffd500,0xffd500,0xffd500],
+        "FLAG_JAPAN":   [0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xbc002d,0xbc002d,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff,0xffffff],
+        "FLAG_TAIWAN":  [0xfe0000,0x000097,0x000097,0x000097,0x000097,0xffffff,0x000097,0xfe0000,0x000097,0x000097,0x000097,0xfe0000,0xfe0000,0xfe0000,0xfe0000,0xfe0000,0xfe0000]
     }
 }
 

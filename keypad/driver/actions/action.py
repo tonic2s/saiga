@@ -1,5 +1,6 @@
 from messaging import Command, CommandType
 
+
 class AbstractAction:
     def activate(self) -> tuple[Command]:
         raise NotImplementedError()
@@ -12,10 +13,10 @@ class HIDKeyboardAction(AbstractAction):
         self.hid_keycode = hid_keycode
 
     def activate(self) -> tuple[Command]:
-        return (Command(CommandType.SEND_KEYCODE, press=True, release=False, keycode=self.hid_keycode), )
+        return (Command(CommandType.KEYBOARD_SEND_KEYCODE, press=True, release=False, keycode=self.hid_keycode), )
 
     def deactivate(self) -> tuple[Command]:
-        return (Command(CommandType.SEND_KEYCODE, press=False, release=True, keycode=self.hid_keycode), )
+        return (Command(CommandType.KEYBOARD_SEND_KEYCODE, press=False, release=True, keycode=self.hid_keycode), )
 
 
 class HIDConsumerControlAction(AbstractAction):
@@ -23,7 +24,7 @@ class HIDConsumerControlAction(AbstractAction):
         self.hid_controlcode = hid_controlcode
 
     def activate(self) -> tuple[Command]:
-        return (Command(CommandType.SEND_CONSUMER_CONTROL, controlcode=self.hid_controlcode), )
+        return (Command(CommandType.CONSUMER_CONTROL_SEND, controlcode=self.hid_controlcode), )
 
     def deactivate(self) -> tuple[Command]:
         return tuple()
@@ -34,10 +35,10 @@ class HIDMouseButtonAction(AbstractAction):
         self.button = button
 
     def activate(self) -> tuple[Command]:
-        return (Command(CommandType.SEND_MOUSE_BUTTON, press=True, release=False, button=self.button), )
+        return (Command(CommandType.MOUSE_SEND_BUTTON, press=True, release=False, button=self.button), )
 
     def deactivate(self) -> tuple[Command]:
-        return (Command(CommandType.SEND_MOUSE_BUTTON, press=False, release=True, button=self.button), )
+        return (Command(CommandType.MOUSE_SEND_BUTTON, press=False, release=True, button=self.button), )
 
 
 class HIDMouseMoveAction(AbstractAction):
@@ -76,6 +77,21 @@ class WrappedAction(AbstractAction):
         return self.inner_action.deactivate() + self.outer_action.deactivate()
 
 
+class SequenceAction(AbstractAction):
+    def __init__(self, *actions: AbstractAction):
+        self.actions = actions
+        self.current_action_index = 0
+
+    def activate(self) -> tuple[Command]:
+        action = self.actions[self.current_action_index]
+        self.current_action_index = (self.current_action_index + 1) % len(self.actions)
+
+        return action.activate() + action.deactivate()
+
+    def deactivate(self) -> tuple[Command]:
+        return tuple()
+
+
 class MidiNoteAction(AbstractAction):
     def __init__(self, pitch: int):
         self.pitch = pitch
@@ -85,6 +101,7 @@ class MidiNoteAction(AbstractAction):
 
     def deactivate(self) -> tuple[Command]:
         return (Command(CommandType.MIDI_PLAY_NOTE, on=False, pitch=self.pitch), )
+
 
 class MidiControllerAction(AbstractAction):
     def __init__(self, controller: int, activation_value, deactivation_value = None):
@@ -109,6 +126,7 @@ class AbstractLayerAction:
     def deactivate(self, layer_state_manager):
         raise NotImplementedError()
 
+
 class MomentaryLayerEnableAction(AbstractLayerAction):
     def __init__(self, target_layer):
         self.target_layer = target_layer
@@ -118,6 +136,7 @@ class MomentaryLayerEnableAction(AbstractLayerAction):
 
     def deactivate(self, layer_state_manager):
         layer_state_manager.set_layer_state(self.target_layer, False)
+
 
 class LayerToggleAction(AbstractLayerAction):
     def __init__(self, target_layer):
