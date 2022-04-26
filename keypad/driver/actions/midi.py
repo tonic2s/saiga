@@ -317,22 +317,22 @@ MI_CHU = CommandAction(CommandType.MIDI_CHANGE_CHANNEL, delta=1)
 # Stop all notes
 MI_ALLOFF = MidiControllerAction(123, 0)
 # Sustain
-MI_SUS = MidiControllerAction(64, 64, 0)
+MI_SUS = MidiControllerAction(64, 127, 0)
 # Portmento
-MI_PORT = NotImplementedError()
+MI_PORT = MidiControllerAction(65, 127, 0)
 # Sostenuto
-MI_SOST = NotImplementedError()
+MI_SOST = MidiControllerAction(66, 127, 0)
 # Soft Pedal
-MI_SOFT = NotImplementedError()
+MI_SOFT = MidiControllerAction(67, 127, 0)
 # Legato
-MI_LEG = NotImplementedError()
+MI_LEG = MidiControllerAction(68, 127, 0)
 
 # Modulation
-MI_MOD = NotImplementedError()
+MI_MOD = CommandAction(CommandType.MIDI_MODULATION, modulate=True)
 # Decrease modulation speed
-MI_MODSD = NotImplementedError()
+MI_MODSD = CommandAction(CommandType.MIDI_MODULATION, delta=-1)
 # Increase modulation speed
-MI_MODSU = NotImplementedError()
+MI_MODSU = CommandAction(CommandType.MIDI_MODULATION, delta=1)
 
 # Bend pitch down
 MI_BENDD = NotImplementedError()

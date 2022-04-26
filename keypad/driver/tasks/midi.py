@@ -74,6 +74,16 @@ class MIDIDevice(Task):
                     elif "channel" in command.metadata:
                         self.channel = min(15, max(0, command.metadata["channel"]))
 
+                elif command.type == CommandType.MIDI_MODULATION:
+                    if "delta" in command.metadata:
+                        if command.metadata["delta"] > 0:
+                            self.modulation_interval = min(15, max(0, self.modulation_interval + 1))
+                        else:
+                            self.modulation_interval = min(15, max(0, self.modulation_interval - 1))
+
+                    if "modulate" in command.metadata and command.metadata["modulate"]:
+                        self.midi.send(ControlChange(1, self.modulation_interval), self.channel)
+
                 elif command.type == CommandType.MIDI_CONTROLLER:
                     self.midi.send(ControlChange(command.metadata["controller"], command.metadata["value"]), self.channel)
 

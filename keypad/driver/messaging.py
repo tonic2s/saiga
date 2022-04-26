@@ -40,6 +40,7 @@ class CommandType:
     MIDI_CHANGE_VELOCITY = 17
     MIDI_CHANGE_CHANNEL = 18
     MIDI_CONTROLLER = 19
+    MIDI_MODULATION = 20
 
     def to_string(command_type: int):
         if command_type == CommandType.SEND_KEYCODE:
@@ -80,6 +81,8 @@ class CommandType:
             return "MIDI_CHANGE_CHANNEL"
         elif command_type == CommandType.MIDI_CONTROLLER:
             return "MIDI_CONTROLLER"
+        elif command_type == CommandType.MIDI_MODULATION:
+            return "MIDI_MODULATION"
 
 
 class Command:
