@@ -1,4 +1,4 @@
-from actions.action import AbstractAction, AbstractLayerAction
+from actions.action import AbstractAction
 from messaging import AbstractInputHandler, InputType
 
 
@@ -27,7 +27,7 @@ class KeyboardActionLayer:
         self.default_enabled = default_enabled
         self.action_lookup: list[list[AbstractAction]] = map_rows
 
-    def get_action(self, row, column) -> AbstractAction:
+    def get_action(self, row: int, column: int) -> AbstractAction:
         return self.action_lookup[row][column]
 
 class KeyboardActionMap(AbstractInputHandler):
@@ -42,10 +42,10 @@ class KeyboardActionMap(AbstractInputHandler):
 
         LAYER_STATE_MANAGER.register_layers(layer_enabled)
 
-    def is_layer_enabled(self, layer_name):
+    def is_layer_enabled(self, layer_name: str):
         return LAYER_STATE_MANAGER.is_layer_enabled(layer_name)
 
-    def get_action(self, row, column):
+    def get_action(self, row: int, column: int):
         result_action = None
 
         # NOTE: Assumes that the default layer is always enabled
@@ -63,21 +63,15 @@ class KeyboardActionMap(AbstractInputHandler):
             action = self.get_action(metadata["row"], metadata["column"])
             if action is None:
                 return tuple()
-            elif isinstance(action, AbstractLayerAction):
-                action.activate(LAYER_STATE_MANAGER)
-                return tuple()
             else:
-                return action.activate()
+                return action.activate(LAYER_STATE_MANAGER)
 
         elif message_type == InputType.KEY_RELEASED:
             action = self.get_action(metadata["row"], metadata["column"])
             if action is None:
                 return tuple()
-            elif isinstance(action, AbstractLayerAction):
-                action.deactivate(LAYER_STATE_MANAGER)
-                return tuple()
             else:
-                return action.deactivate()
+                return action.deactivate(LAYER_STATE_MANAGER)
 
         return tuple()
 
@@ -129,6 +123,6 @@ class EncoderActionMap(AbstractInputHandler):
             action = self.get_action(metadata["id"], metadata["delta"])
 
             if action is not None:
-                return action.activate() + action.deactivate()
+                return action.activate(LAYER_STATE_MANAGER) + action.deactivate(LAYER_STATE_MANAGER)
 
         return tuple()
