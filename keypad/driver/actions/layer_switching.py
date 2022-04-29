@@ -1,4 +1,4 @@
-from actions.action import MomentaryLayerEnableAction, LayerToggleAction
+from actions.action import MomentaryLayerEnableAction, LayerToggleAction, LayerCycleAction
 
 
 # Set the base (default) layer
@@ -32,3 +32,8 @@ def TO(layer):
 # Normally acts like MO unless it’s tapped multiple times, which toggles layer on
 def TT(layer):
     raise NotImplementedError()
+
+
+# Cycle though layer list and allways keep the current one enabled. Use None to have a step where all others are turnd off
+def CY(*layers):
+    return LayerCycleAction(*layers)

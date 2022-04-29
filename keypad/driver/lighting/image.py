@@ -26,7 +26,11 @@ class ImageProgram(LightingProgram):
         for command in self.command_reader:
             if command.type == CommandType.LIGHTING_CHANGE_SECONDARY:
                 if "delta" in command.metadata:
-                    self.current_image_index = (self.current_image_index + command.metadata["delta"]) % len(self.images)
+                    if command.metadata["delta"] > 0:
+                        self.current_image_index = (self.current_image_index + 1) % len(self.images)
+                    else:
+                        self.current_image_index = (self.current_image_index - 1) % len(self.images)
+
 
                     self.update_image()
 

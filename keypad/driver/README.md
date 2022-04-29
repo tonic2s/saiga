@@ -10,8 +10,6 @@ Install needed librarys from https://github.com/adafruit/Adafruit_CircuitPython_
 
 ## TODO
 - Frequency modulation to dimm LED backlight
-- Disable watchdog when stoping script
-- MIDI to control Abelton
 - Use non-volatile memory to store light program
     - https://docs.circuitpython.org/en/latest/shared-bindings/microcontroller/index.html#microcontroller.nvm
 - Handle releasing key when not released before layer switch

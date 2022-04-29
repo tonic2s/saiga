@@ -3,6 +3,7 @@ from actions.midi import *
 from actions.basic import *
 from actions.media import *
 from actions.mouse import *
+from actions.utils import *
 from actions.modifiers import *
 from actions.rgb_lighting import *
 from actions.layer_switching import *
@@ -30,11 +31,11 @@ KEYBOARD = {
     ],
     "ACTION_MAP": KeyboardActionMap(
         BASE=KeyboardActionLayer(
-            (MO("RGB"),        TG("NUM"),        KC_KP_SLASH,      KC_KP_ASTERISK,   KC_KP_MINUS       ),
-            (TG("MIDI"),       KC_KP_7,          KC_KP_8,          KC_KP_9,          XXXXXXX           ),
-            (XXXXXXX,          KC_KP_4,          KC_KP_5,          KC_KP_6,          KC_KP_PLUS        ),
-            (XXXXXXX,          KC_KP_1,          KC_KP_2,          KC_KP_3,          XXXXXXX           ),
-            (XXXXXXX,          KC_KP_0,          XXXXXXX,          KC_KP_DOT,        KC_KP_ENTER       )
+            (MO("RGB"),        CY("NUM", "MIDI", None),KC_KP_SLASH,      KC_KP_ASTERISK,   KC_KP_MINUS       ),
+            (MO("RGB"),        KC_KP_7,                KC_KP_8,          KC_KP_9,          XXXXXXX           ),
+            (XXXXXXX,          KC_KP_4,                KC_KP_5,          KC_KP_6,          KC_KP_PLUS        ),
+            (XXXXXXX,          KC_KP_1,                KC_KP_2,          KC_KP_3,          XXXXXXX           ),
+            (XXXXXXX,          KC_KP_0,                XXXXXXX,          KC_KP_DOT,        KC_KP_ENTER       )
         ),
         NUM=KeyboardActionLayer(
             (KC_TRNS,          KC_TRNS,          KC_TRNS,          KC_TRNS,          KC_TRNS           ),
@@ -44,11 +45,11 @@ KEYBOARD = {
             (XXXXXXX,          KC_INSERT,        XXXXXXX,          KC_TRNS,          KC_TRNS           )
         ),
         MIDI=KeyboardActionLayer(
-            (KC_TRNS,          KC_TRNS,          MI_ALLOFF,        KC_TRNS,          KC_TRNS           ),
+            (KC_TRNS,          KC_TRNS,          MI_ALLOFF,        MI_PORT,          MI_SOST           ),
             (KC_TRNS,          MI_D_1,           MI_C_1,           MI_B,             XXXXXXX           ),
-            (XXXXXXX,          MI_A,             MI_G,             MI_F,             KC_TRNS           ),
+            (XXXXXXX,          MI_A,             MI_G,             MI_F,             MI_SOFT           ),
             (XXXXXXX,          MI_E,             MI_D,             MI_C,             XXXXXXX           ),
-            (XXXXXXX,          MI_SUS,           XXXXXXX,          KC_TRNS,          KC_TRNS           )
+            (XXXXXXX,          MI_SUS,           XXXXXXX,          KC_TRNS,          MI_LEG            )
         ),
         RGB=KeyboardActionLayer(
             (KC_TRNS,          KC_NUM_LOCK,      KC_TRNS,          KC_TRNS,          RGB_S_D           ),
