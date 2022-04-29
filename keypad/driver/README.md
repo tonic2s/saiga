@@ -8,6 +8,10 @@ Copy `.UF2` file to the Raspbery Pico. It can be downloaded from https://circuit
 ## Install Librarys
 Install needed librarys from https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases
 
+## Class Diagrams
+![driver class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/tonic2s/saiga/main/keypad/docs/driver.puml)
+![actions diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/tonic2s/saiga/main/keypad/docs/actions.puml)
+
 ## TODO
 - Frequency modulation to dimm LED backlight
 - Use non-volatile memory to store light program
