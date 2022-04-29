@@ -1,0 +1,51 @@
+@startuml
+
+skinparam nodesep 10
+skinparam ranksep 35
+skinparam linetype ortho
+hide empty members
+
+package Actions {
+    interface AbstractInputHandler {
+        handle_input(message_type, metadata)
+    }
+
+    class KeyboardActionMap
+    class EncoderActionMap
+
+    KeyboardActionMap .up.|> AbstractInputHandler
+    EncoderActionMap .up.|> AbstractInputHandler
+
+    class KeyboardActionLayer
+    class EncoderActionLayer
+    EncoderActionMap *-down- EncoderActionLayer
+    KeyboardActionMap *-down- KeyboardActionLayer
+
+    AbstractAction -up-* EncoderActionLayer
+    AbstractAction -up-* KeyboardActionLayer
+
+    interface AbstractAction {
+        activate(layer_state_manager) -> Command[]
+        deactivate(layer_state_manager) -> Command[]
+    }
+
+    class CombinedAction extends AbstractAction
+    class WrappedAction extends AbstractAction
+    class SequenceAction extends AbstractAction
+    class CommandAction extends AbstractAction
+    class HIDKeyboardAction extends AbstractAction
+    class HIDConsumerControlAction extends AbstractAction
+    class HIDMouseButtonAction extends AbstractAction
+    class HIDMouseMoveAction extends AbstractAction
+    class MidiNoteAction extends AbstractAction
+    class MidiControllerAction extends AbstractAction
+    class MomentaryLayerEnableAction extends AbstractAction
+    class LayerToggleAction extends AbstractAction
+    class LayerCycleAction extends AbstractAction
+
+    class LayerStateManager << (S,#FF7700) Singleton >>
+    EncoderActionMap o-- LayerStateManager
+    KeyboardActionMap o-- LayerStateManager
+}
+
+@enduml

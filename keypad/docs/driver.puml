@@ -1,0 +1,132 @@
+@startuml
+
+set namespaceSeparator none
+skinparam nodesep 10
+skinparam ranksep 35
+skinparam linetype polyline
+hide empty members
+
+package Tasks {
+    interface Task {
+        advance()
+    }
+    interface TimedTask {
+        advance(time_delta: float)
+    }
+
+    class Backlight implements Task
+    class USBKeyboardDevice implements Task
+    class ConsumerControlDevice implements Task
+    class MIDIDevice implements Task
+    class MouseDevice implements Task
+    class FileLogger implements Task
+    class ConsoleLogger implements Task
+    class Watchdog implements Task
+
+    class StatusLight implements TimedTask
+    StatusLight .[hidden]left. ConsumerControlDevice
+
+    package Lighting {
+        interface LightingProgram {
+            advance(time_delta: float)
+            deinit()
+        }
+
+        class PlainProgram implements LightingProgram
+        class PulseProgram implements LightingProgram
+        class ImageProgram implements LightingProgram
+        class RainbowProgram implements LightingProgram
+
+        class AccentLight implements TimedTask
+        LightingProgram *- AccentLight: switches between
+    }
+
+    package Inputs {
+        class RotaryEncoderInput implements Task
+        class KeyboardInput implements Task
+    }
+}
+
+class code.py {
+    asyncio_tasks: Union[Task, TimedTask]
+}
+
+code.py *-up- Task: executes
+TimedTask -up-* code.py: executes
+
+class config.py {
+    configures tasks and actions used by the input handlers
+}
+
+
+package Messageing {
+    enum InputType {
+        KEY_PRESSED
+        KEY_RELEASED
+        ENCODER_CHANGED
+        ERROR
+    }
+
+    enum CommandType {
+        LOG
+        STATUS_BLINK
+        KEYBOARD_SEND_KEYCODE
+        LIGHTING_CHANGE_BRIGHTNESS
+        LIGHTING_CHANGE_HUE
+        LIGHTING_CHANGE_SATURATION
+        LIGHTING_CHANGE_PROGRAM
+        LIGHTING_CHANGE_SECONDARY
+        CONSUMER_CONTROL_SEND
+        MOUSE_MOVE
+        MOUSE_SEND_BUTTON
+        MIDI_PLAY_NOTE
+        MIDI_CHANGE_OCTAVE
+        MIDI_CHANGE_TRANSPOSITION
+        MIDI_CHANGE_VELOCITY
+        MIDI_CHANGE_CHANNEL
+        MIDI_CONTROLLER
+        MIDI_MODULATION
+    }
+
+    class CommandBus {
+        commands: list[Command]
+        readers: list[CommandReader]
+        input_handlers: list[AbstractInputHandler]
+
+        trigger(input_type, metadata)
+        push(command_type, metadata)
+        subscribe(): CommandReader
+    }
+
+    CommandBus .right.|> Task
+    CommandBus::trigger .down. InputType
+
+    class Command {
+        id: int
+        type: CommandType
+        metadata: dict
+    }
+
+    CommandBus o-- Command
+    Command::type .right. CommandType
+
+    class CommandReader <<itterable>> {
+        read_head:
+
+        -init()
+        unsubscribe()
+    }
+    CommandBus "constructs Reader" *-- CommandReader
+
+    CommandReader .. Command: itterates over
+}
+
+package Actions {
+    interface AbstractInputHandler {
+        handle_input(message_type, metadata)
+    }
+    CommandBus::input_handlers *-left- AbstractInputHandler : handles input with
+
+}
+
+@enduml
